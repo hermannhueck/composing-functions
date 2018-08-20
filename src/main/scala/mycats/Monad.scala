@@ -1,4 +1,4 @@
-package categories
+package mycats
 
 import scala.concurrent.Future
 import scala.language.higherKinds
@@ -14,7 +14,18 @@ trait Monad[F[_]] extends Functor[F] {
 
 object Monad {
 
-  def apply[F[_]: Monad]: Monad[F] = implicitly[Monad[F]]
+  object ops {
+
+    implicit class MonadSyntax[F[_] : Monad, A](ctx: F[A]) {
+      def flatMap[B](f: A => F[B]): F[B] = Monad[F].flatMap(ctx)(f)
+    }
+  }
+
+  def apply[F[_]: Monad]: Monad[F] = implicitly
+
+  // Kleisli composition
+  def kleisliCompose[F[_]: Monad, A, B, C](f: A => F[B], g: B => F[C]): A => F[C] =
+    a => Monad[F].flatMap(f(a))(g)
 
   // default typeclass instances in implicit scope
 
@@ -44,7 +55,6 @@ object Monad {
     override def flatMap[A, B](fa: Id[A])(f: A => Id[B]): Id[B] = f(fa)
   }
 
-/*
   implicit def eitherMonad[L]: Monad[Either[L, ?]] = new Monad[Either[L, ?]] {
     override def pure[R](r: R): Either[L, R] = Right(r)
     override def flatMap[R1, R2](fa: Either[L, R1])(f: R1 => Either[L, R2]): Either[L, R2] = fa flatMap f
@@ -69,18 +79,5 @@ object Monad {
 
     override def map[R1, R2](fa: P => R1)(f: R1 => R2): P => R2 =
       fa andThen f
-  }
-*/
-
-  object ops {
-
-    implicit class MonadF[F[_]: Monad, A](ctx: F[A]) {
-
-      private val F = implicitly[Monad[F]]
-
-      def pure(a: A): F[A] = F.pure(a)
-      def flatMap[B](f: A => F[B]): F[B] = F.flatMap(ctx)(f)
-      def map[B](f: A => B): F[B] = F.map(ctx)(f)
-    }
   }
 }

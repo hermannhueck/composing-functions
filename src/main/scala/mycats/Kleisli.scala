@@ -1,0 +1,56 @@
+package mycats
+
+import scala.language.higherKinds
+
+case class Kleisli[F[_], A, B](run: A => F[B]) {
+
+  def flatMap[C](f: B => Kleisli[F, A, C])(implicit M: Monad[F]): Kleisli[F, A, C] = Kleisli { a =>
+    M.flatMap(run(a))(b => f(b).run(a))
+  }
+
+  def flatMapF[C](f: B => F[C])(implicit M: Monad[F]): Kleisli[F, A, C] = Kleisli { a =>
+    M.flatMap(run(a))(f)
+  }
+
+  def andThen[C](f: B => F[C])(implicit M: Monad[F]): Kleisli[F, A, C] =
+    flatMapF(f)
+
+  def andThen[C](that: Kleisli[F, B, C])(implicit M: Monad[F]): Kleisli[F, A, C] =
+    this andThen that.run
+
+  def compose[Z](f: Z => F[A])(implicit M: Monad[F]): Kleisli[F, Z, B] =
+    Kleisli(f) andThen this.run
+
+  def compose[Z](that: Kleisli[F, Z, A])(implicit M: Monad[F]): Kleisli[F, Z, B] =
+    that andThen this
+
+  def map[C](f: B => C)(implicit F: Functor[F]): Kleisli[F, A, C] = Kleisli { a =>
+    F.map(run(a))(f)
+  }
+
+  def mapF[N[_], C](f: F[B] => N[C]): Kleisli[N, A, C] = Kleisli { a =>
+    f(run(a))
+  }
+
+  def apply(a: A): F[B] = run(a)
+}
+
+object Kleisli {
+
+  def pure[F[_], A, B](b: B)(implicit F: Monad[F]): Kleisli[F, A, B] =
+    Kleisli { _ => F.pure(b) }
+
+  def ask[F[_], A](implicit F: Monad[F]): Kleisli[F, A, A] =
+    Kleisli { a => F.pure(a) }
+
+
+  object ops {
+
+    implicit def kleisliMonad[F[_] : Monad, A]: Monad[Kleisli[F, A, ?]] = new Monad[Kleisli[F, A, ?]] {
+
+      override def pure[B](b: B): Kleisli[F, A, B] = pure(b)
+
+      override def flatMap[B, C](kl: Kleisli[F, A, B])(f: B => Kleisli[F, A, C]): Kleisli[F, A, C] = kl flatMap f
+    }
+  }
+}

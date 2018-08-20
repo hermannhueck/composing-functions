@@ -9,13 +9,13 @@ scalacOptions ++= Seq(
   "-unchecked",           // warn about unchecked type parameters
   "-feature",             // warn about misused language features
   //"-Xlint",               // enable handy linter warnings
-  //"-Ypartial-unification" // allow the compiler to unify type constructors of different arities
+  "-Ypartial-unification" // allow the compiler to unify type constructors of different arities
   //"-language:higherKinds",// allow higher kinded types without `import scala.language.higherKinds`
   // "-Xfatal-warnings",     // turn compiler warnings into errors
 )
 
-//libraryDependencies ++= Seq(
-//  "org.typelevel" %% "cats-core" % "1.1.0",
-//)
+libraryDependencies ++= Seq(
+  "org.typelevel" %% "cats-core" % "1.1.0",
+)
 
-//addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.7")
+addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.7")
