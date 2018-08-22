@@ -1,4 +1,4 @@
-# Composing Functions in different ways
+# From Function Composition to Kleisli
 
 Fine-grained composability of functions is one of the core advantages of FP.
 
