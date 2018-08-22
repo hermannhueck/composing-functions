@@ -1,6 +1,5 @@
 package demo
 
-import cats.Id
 import cats.data.{Kleisli, Reader}
 import cats.syntax.functor._
 import cats.syntax.flatMap._
@@ -9,8 +8,6 @@ import cats.instances.function._
 import cats.instances.option._
 import cats.instances.int._
 import cats.kernel.Monoid
-
-import scala.language.higherKinds
 
 object ComposingFunctionsWithCats extends App {
 

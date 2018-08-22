@@ -6,11 +6,8 @@ import cats.{Applicative, Monad}
 import cats.data.{EitherT, Kleisli}
 import cats.syntax.either._
 import cats.syntax.applicative._
-import cats.syntax.flatMap._
-import cats.instances.either._
 
 import scala.language.{higherKinds, postfixOps}
-import scala.util.{Failure, Success, Try}
 
 /*
   Step 6 generalizes getUrlET, getLinesET, wordCountET and wcKleisli.
@@ -66,7 +63,7 @@ object WCApp6EitherTF extends App with Utils {
 
   object UseIdForF {
 
-    println("\n----- Sync: Use Id for F ...")
+    println("\n----- Sync: Reify F with cats.Id ...")
 
     import cats.Id
 
@@ -78,7 +75,7 @@ object WCApp6EitherTF extends App with Utils {
 
   object UseFutureForF {
 
-    println("\n----- Async: Use Future for F ...")
+    println("\n----- Async: Reify F with Future ...")
 
     import scala.concurrent.ExecutionContext.Implicits.global
     import scala.concurrent.duration._
@@ -93,7 +90,7 @@ object WCApp6EitherTF extends App with Utils {
 
   object UseMonixTaskForF {
 
-    println("\n----- Async: Use monix.Task for F")
+    println("\n----- Async: Reify F with monix.eval.Task")
 
     import monix.execution.Scheduler.Implicits.global
     import monix.eval.Task

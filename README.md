@@ -33,4 +33,4 @@ This App is implmented in 6 subsequent steps, one improving the other.
 - Step 4: Uses Kleisli on Either
 - Step 5: Uses Kleisli on EitherT which wraps a Future wrapping an Either
 - Step 6: abstracts over Future and turns Future to F[_]: Monad.
-F is reified with the concrete types: Id, Future and monix.eval.Task.
+F is reified with the concrete types: cats.Id, scala.concurrent.Future and monix.eval.Task.

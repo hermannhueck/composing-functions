@@ -4,14 +4,11 @@ import java.net.URL
 
 import cats.data.{EitherT, Kleisli}
 import cats.syntax.either._
-import cats.syntax.flatMap._
-import cats.instances.either._
 import cats.instances.future._
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.{Failure, Success, Try}
 import scala.language.postfixOps
 
 /*

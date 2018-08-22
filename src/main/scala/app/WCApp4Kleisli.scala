@@ -2,7 +2,6 @@ package app
 
 import cats.data.Kleisli
 import cats.syntax.either._
-import cats.syntax.flatMap._
 import cats.instances.either._
 
 /*
