@@ -18,3 +18,19 @@ and show its usage with *flatMap*, *flatMapF*, *andThen* and *compose*.
 I then show the *Reader* Monad, a *Kleisli* simplified with *Id*.
 
 Finally I turn to and demonstrate function composition with Monoids.
+
+All this is in package demo.
+
+--
+
+Another App (in package app) is in app.WCApp[1-6]*.scala.
+This App implements a simple word count (WC) for a text resource on github.
+This App is implmented in 6 subsequent steps, one improving the other.
+
+- Step 1: synchronous impl with try-catch-finally
+- Step 2: synchronous impl with Try and auto-closing of the resource
+- Step 3: goes functional. It turns methods (defs) into functions (vals).
+- Step 4: Uses Kleisli on Either
+- Step 5: Uses Kleisli on EitherT which wraps a Future wrapping an Either
+- Step 6: abstracts over Future and turns Future to F[_]: Monad.
+F is reified with the concrete types: Id, Future and monix.eval.Task.
