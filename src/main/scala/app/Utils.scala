@@ -11,7 +11,7 @@ import scala.language.reflectiveCalls
 
 trait Utils {
 
-  // this saves us from finally blocks to close a resourse
+  // this saves us from finally blocks to close a resource
   // works with every resource that has a method 'close'
   def using[A, CL <: {def close(): Unit}] (closeable: CL) (f: CL => A): A =
     try {
@@ -74,4 +74,16 @@ trait Utils {
   // wordCount as a Function1 (val)
   val wordCount: List[String] => List[(String, Int)] = lines =>
     wordCountDef(lines)
+
+
+  val showResult: Either[Error, List[(String, Int)]] => Unit =
+    result => result.fold(
+      error => println(error),
+      wc => wc foreach println
+    )
+
+  val completionHandler: Try[Either[Error, List[(String, Int)]]] => Unit = {
+    case Failure(ex) => println(ex)
+    case Success(result) => showResult(result)
+  }
 }

@@ -1,6 +1,14 @@
 package app
 
-object WCApp2 extends App with Utils {
+/*
+  In the 2nd development step I improved getUrlDef, getLinesDef and wordCountDef:
+
+  The finally block disappeared through the invocation of Utils.using.
+  The try-catch blocks were replaces by a scala.util.Try
+
+  After improving them I moved these methods to trait Utils.
+ */
+object WCApp2TryAutoClose extends App with Utils {
 
   import Errors._
 
@@ -15,8 +23,7 @@ object WCApp2 extends App with Utils {
       wcList <- Right(wordCountDef(lines))
     } yield wcList
 
-  wcDef(config.url).fold(
-    error => println(error),
-    wc => wc foreach println
-  )
+  showResult(wcDef(config.url)) // run the Function1 and show the Either's result
+
+  println("-----\n")
 }

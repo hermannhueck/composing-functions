@@ -5,7 +5,18 @@ import java.net.{MalformedURLException, URL, UnknownHostException}
 
 import scala.io.{BufferedSource, Source}
 
-object WCApp1 extends App {
+/*
+  This is the 1st draft of the WC (word count) program.
+
+  It provides three methods (getUrlDef, getLinesDef, wordCountDef).
+  wcDef combines these methods in a for-comprehension yielding
+  either an Error or a list of pairs: List[(String, Int)].
+  Each pair contains a word of the input text and the frequency of occurrences of that word.
+
+  Traditional, java-like exception handling is done in catch blocks. :-(
+  The URL Source is closed in the finally block. :-(
+ */
+object WCApp1Draft extends App {
 
   import Errors._
 
@@ -60,4 +71,6 @@ object WCApp1 extends App {
     error => println(error),
     wc => wc foreach println
   )
+
+  println("-----\n")
 }
