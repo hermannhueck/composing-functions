@@ -30,7 +30,7 @@ This App is implmented in 6 subsequent steps, one improving the other.
 - Step 1: synchronous impl with try-catch-finally
 - Step 2: synchronous impl with Try and auto-closing of the resource
 - Step 3: goes functional. It turns methods (defs) into functions (vals).
-- Step 4: Uses Kleisli on Either
-- Step 5: Uses Kleisli on EitherT which wraps a Future wrapping an Either
+- Step 4: Uses Kleisli wrapping an Either
+- Step 5: Uses Kleisli wrapping an EitherT which wraps a Future wrapping an Either
 - Step 6: abstracts over Future and turns Future to F[_]: Monad.
-F is reified with the concrete types: cats.Id, scala.concurrent.Future and monix.eval.Task.
+F is reified with three concrete types: cats.Id, scala.concurrent.Future and monix.eval.Task.
