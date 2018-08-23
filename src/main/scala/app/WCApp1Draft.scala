@@ -55,7 +55,7 @@ object WCApp1Draft extends App {
       .groupBy(s => s)
       .mapValues(_.length)
       .toList
-      .filter(_._2 > 1)
+      .filter(_._2 > 2) // return only words with occurences > 2
       .sortWith(_._2 > _._2)
 
   val config = Config("https://raw.githubusercontent.com", "hermannhueck", "composing-functions", "master", "README.md")
@@ -67,10 +67,14 @@ object WCApp1Draft extends App {
       wcList <- Right(wordCountDef(lines))
     } yield wcList
 
-  wcDef(config.url).fold(
-    error => println(error),
-    wc => wc foreach println
+  val wc = wcDef(config.url)
+
+  val result = wc.fold(
+    error => error.toString,
+    wc => wc.map(_.toString).mkString("\n")
   )
+
+  println(result)
 
   println("-----\n")
 }

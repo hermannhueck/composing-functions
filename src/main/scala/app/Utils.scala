@@ -68,7 +68,7 @@ trait Utils {
       .groupBy(s => s)
       .mapValues(_.length)
       .toList
-      .filter(_._2 > 1)
+      .filter(_._2 > 2) // return only words with occurences > 2
       .sortWith(_._2 > _._2)
 
   // wordCount as a Function1 (val)
@@ -76,14 +76,20 @@ trait Utils {
     wordCountDef(lines)
 
 
-  val showResult: Either[Error, List[(String, Int)]] => Unit =
+  val stringResult: Either[Error, List[(String, Int)]] => String = // pure, without side-effect
     result => result.fold(
-      error => println(error),
-      wc => wc foreach println
+      error => error.toString,
+      wc => wc.map(_.toString).mkString("\n")
     )
 
-  val completionHandler: Try[Either[Error, List[(String, Int)]]] => Unit = {
-    case Failure(ex) => println(ex)
-    case Success(result) => showResult(result)
+  val showResult: Either[Error, List[(String, Int)]] => Unit = // impure, with side-effect
+    result => println(stringResult(result))
+
+  val messageFrom: Try[Either[Error, List[(String, Int)]]] => String = { // pure, without side-effect
+    case Failure(ex) => ex.toString
+    case Success(result) => stringResult(result)
   }
+
+  val completionHandler: Try[Either[Error, List[(String, Int)]]] => Unit = // impure, with side-effect
+    tryy => println(messageFrom(tryy))
 }

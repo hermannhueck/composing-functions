@@ -39,7 +39,8 @@ object WCApp3Functions extends App with Utils {
       wcList <- wordCount(lines).asRight
     } yield wcList
 
-  showResult(wc(config.url)) // run the Function1 and show the Either's result
+  val result = stringResult(wc(config.url)) // run the Function1 'wc' returns the Either result
+  println(result)
 
   println("-----\n")
 }

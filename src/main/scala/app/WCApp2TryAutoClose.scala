@@ -23,7 +23,14 @@ object WCApp2TryAutoClose extends App with Utils {
       wcList <- Right(wordCountDef(lines))
     } yield wcList
 
-  showResult(wcDef(config.url)) // run the Function1 and show the Either's result
+  val wc = wcDef(config.url)
+
+  val result = wc.fold(
+    error => error.toString,
+    wc => wc.map(_.toString).mkString("\n")
+  )
+
+  println(result)
 
   println("-----\n")
 }

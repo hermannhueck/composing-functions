@@ -34,7 +34,8 @@ object WCApp4Kleisli extends App with Utils {
   val wc: String => Either[Error, List[(String, Int)]] =
     wcKleisli.run // unwrapping the Kleisli returns the Function1
 
-  showResult(wc(config.url)) // run the Function1 and show the Either's result
+  val result = stringResult(wc(config.url)) // run the Function1 'wc' returns the Either result
+  println(result)
 
   println("-----\n")
 }
