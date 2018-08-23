@@ -5,11 +5,11 @@ Fine-grained composability of functions is one of the core advantages of FP.
 In this little project I demonstrate different ways of composing functions.
 
 I only deal with *scala.Function1*, because due to currying we can regard
-any function as a *Function1*.
+any function (except Function0) as a *Function1*.
 
 Starting with *Function1#compose* and *Function1#andThen*
 I implement *map* and *flatMap* for Function1 what allows me
-to use functions in for-comprehensions. I also make it
+to compose functions in for-comprehensions. I also make it
 a Monad in order to treat functions as Monads, i.e. to use them
 in any monadic context.
 
@@ -19,13 +19,13 @@ I then show the *Reader* Monad, a *Kleisli* simplified with *Id*.
 
 Finally I turn to and demonstrate function composition with Monoids.
 
-All this is in package demo.
+All this can be found in package *demo*.
 
 --
 
-Another App (in package app) is in app.WCApp[1-7]*.scala.
+Another App (in package *app*) is in *app.WCApp[1-7]*.scala*.
 This App implements a simple word count (WC) for a text resource on github.
-This App is implmented in 6 subsequent steps, one improving the other.
+This App is implmented in 7 subsequent steps, one improving the other.
 
 - Step 1: First draft: synchronous impl with try-catch-finally
 - Step 2: Synchronous impl with Try and auto-closing of the resource
