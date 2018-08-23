@@ -7,7 +7,7 @@ import Monoid.ops._
 
 import scala.language.higherKinds
 
-object ComposingFunctions extends App {
+object ComposingFunctions extends App { self =>
 
   println("\n===== Mapping Functions")
 
@@ -17,17 +17,17 @@ object ComposingFunctions extends App {
   val d2s: Double => String = _.toString
   val prt: String => Unit = s => println(s"result = $s !!!")
 
-  println("----- Function1.compose")
+  println("----- Function1#compose")
 
   val fComposed1 = prt compose d2s compose div10By compose plus2 compose s2i
   fComposed1("3")
 
-  println("----- Function1.andThen")
+  println("----- Function1#andThen")
 
   val fComposed2 = s2i andThen plus2 andThen div10By andThen d2s andThen prt
   fComposed2("3")
 
-  println("----- Functor[Function1].map (via implicit conversion)")
+  println("----- Functor[Function1]#map (via implicit conversion)")
 
   val fComposed3 = s2i map plus2 map div10By map d2s map prt // requires -Ypartial-unification
   fComposed3("3")
@@ -89,15 +89,33 @@ object ComposingFunctions extends App {
   flatCompose3("3")
 
 
-  println("\n===== Kleisli Composition")
+  println("\n===== Kleisli Composition defined on Function1")
 
-  println("----- Monad.kleisliCompose")
-  def kleisli[F[_]: Monad, A, B, C](f: A => F[B], g: B => F[C]): A => F[C] = Monad.kleisliCompose(f, g)
+  def kleisli[F[_]: Monad, A, B, C](f: A => F[B], g: B => F[C]): A => F[C] =
+    a => Monad[F].flatMap(f(a))(g)
 
   val kleisliCompose: String => Option[Unit] =
     kleisli(kleisli(kleisli(s2iOpt, plus2Opt), div10ByOpt), d2sOpt) map { _.map(prt(_)) }
 
   kleisliCompose("3")
+
+  implicit class RichFunction1[F[_]: Monad, A, B](f: A => F[B]) {
+    def kleisli[C](g: B => F[C]): A => F[C] = self.kleisli(f, g)
+    def >=>[C](g: B => F[C]): A => F[C] = f kleisli g
+  }
+
+  val kleisliCompose2: String => Option[Unit] =
+    s2iOpt kleisli plus2Opt kleisli div10ByOpt kleisli d2sOpt map { _.map(prt(_)) }
+
+  kleisliCompose2("3")
+
+  val kleisliCompose3: String => Option[Unit] =
+    s2iOpt >=> plus2Opt >=> div10ByOpt >=> d2sOpt map { _.map(prt(_)) }
+
+  kleisliCompose3("3")
+
+
+  println("\n===== Kleisli Composition")
 
   println("----- Kleisli#flatMap (for-comprehension)")
   val kleisli1: String => Option[Unit] = input => for {

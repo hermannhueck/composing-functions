@@ -21,11 +21,12 @@ import scala.language.postfixOps
 
   To make this readable I define three helper functions getUrlET, getLinesET, wordCountET.
   All three have the same type structure: A => EitherT[Future, Error, B].
-  As they adhere to the same structure the can be wrapped and composed with Kleisli: see wcKleisli.
+  As they adhere to the same structure they can be wrapped and composed with Kleisli (see wcKleisli).
 
+  wcKleisli returns the Kleisli wrapping an EitherT
   wcEitherT unwraps the Kleisli and yields the EitherT inside.
   wcFuture unwraps the Future contained in the EitherT.
-  wcFuture.onComplete just handles the completion of the Future.
+  wcFuture.onComplete just handles the completion of the Future and prints the Either result contained in it.
  */
 object WCApp6EitherTFuture extends App with Utils {
 

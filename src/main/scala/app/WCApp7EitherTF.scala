@@ -10,28 +10,28 @@ import cats.syntax.applicative._
 import scala.language.{higherKinds, postfixOps}
 
 /*
-  Step 6 generalizes getUrlET, getLinesET, wordCountET and wcKleisli.
-  These functions are now parameterized with the generic type constructor F[_]
-  with replaces Future from the previous step.
+  Step 7 generalizes getUrlET, getLinesET, wordCountET and wcKleisli.
+  These functions are now parameterized with the generic effect F[_]
+  with replaces the Future effect from the previous step.
   Due to the new type parameter of these functions they are now defs instead of vals.
-  (A val cannot hav a type parameter in Scala.)
+  (A val cannot have a type parameter in Scala.)
 
-  In getUrlET, getLinesET, wordCountET F is constrained to have an Applicative instance: F[_]: Applicative
-  With Applicative[F] we are able to lift the results of the functions getUrl, getLines, wordCount into the context F.
+  In getUrlET, getLinesET, wordCountET F[_] is constrained to have an Applicative instance: F[_]: Applicative
+  With Applicative[F] we are able to lift the results of the functions getUrl, getLines, wordCount into the context F (with pure).
 
   wcKleisli has a Monad constraint on F:   def wcKleisli[F[_] : Monad]
-  The Kleisli#andThen internally uses flatMap, hence the Monad constraint on wcKleisli.
+  The Kleisli#andThen internally uses F.flatMap, hence the Monad constraint on wcKleisli.
 
-  wcEitherT also has a Monad constraint on F:   def wcEitherT[F[_] : Monad]
+  wcEitherT also has a Monad constraint on F[_]:   def wcEitherT[F[_] : Monad]
   It unwraps the Kleisli and yields the EitherT contained in it.
 
-  With this parameterization I am able to provide different reifications of F:
+  With this parameterization I am able to provide different reifications of F[_]:
 
-  object UseIdForF uses the Id Monad for F: This makes the Kleisli synchronous as in step 4.
+  object UseIdForF reifies F[_] with the Id Monad: This makes the Kleisli synchronous as in step 5.
 
-  object UseFutrueForF uses the Future Monad for F: This makes the Kleisli asynchronous as in step 5.
+  object UseFutrueForF reifies F[_] with the Future Monad: This makes the Kleisli asynchronous as in step 6.
 
-  object UseMonixTaskForF uses the monix.eval.Task Monad for F an alternative way of asynchronism.
+  object UseMonixTaskForF reifies F[_] with the monix.eval.Task Monad which is an alternative way of asynchronism.
  */
 object WCApp7EitherTF extends App with Utils {
 
@@ -54,7 +54,7 @@ object WCApp7EitherTF extends App with Utils {
   def wordCountET[F[_]: Applicative]: List[String] => EitherT[F, Error, List[(String, Int)]] =
     lines => EitherT(wordCount(lines).asRight[Error].pure[F])
 
-  // Kleisli wrapping a function: A => EitherT[F, Error, B] where f is constrained to: F[_]: Monad
+  // ----- Kleisli wrapping a function: A => EitherT[F, Error, B] where f is constrained to: F[_]: Monad
   //
   def wcKleisli[F[_]: Monad]: Kleisli[EitherT[F, Error, ?], String, List[(String, Int)]] =
     Kleisli(getUrlET[F]) andThen
@@ -65,7 +65,7 @@ object WCApp7EitherTF extends App with Utils {
   def wcEitherT[F[_]: Monad]: String => EitherT[F, Error, List[(String, Int)]] =
     wcKleisli[F].run
 
-  // running and unwrapping the EitherT returns the F effect
+  // running and unwrapping the EitherT returns the F[_] effect
   def wcF[F[_]: Monad]: F[Either[Error, List[(String, Int)]]] =
     wcEitherT[F].apply(config.url).value
 
@@ -76,7 +76,7 @@ object WCApp7EitherTF extends App with Utils {
 
     import cats.Id
 
-    val wc: Either[Error, List[(String, Int)]] = wcF[Id]
+    val wc: Either[Error, List[(String, Int)]] = wcF[Id] // reify F[_] with Id
 
     showResult(wc)
   }
@@ -91,7 +91,7 @@ object WCApp7EitherTF extends App with Utils {
     import scala.concurrent.{Await, Future}
     import cats.instances.future._
 
-    val wcFuture: Future[Either[Error, List[(String, Int)]]] = wcF[Future]
+    val wcFuture: Future[Either[Error, List[(String, Int)]]] = wcF[Future] // reify F[_] with Future
 
     wcFuture.onComplete (completionHandler) // show result when Future is comnplete
 
@@ -108,7 +108,7 @@ object WCApp7EitherTF extends App with Utils {
     import scala.concurrent.duration._
     import scala.concurrent.Await
 
-    val wcTask: Task[Either[Error, List[(String, Int)]]] = wcF[Task]
+    val wcTask: Task[Either[Error, List[(String, Int)]]] = wcF[Task] // reify F[_] with Task
 
     wcTask runOnComplete completionHandler // show result when Task is comnplete
 
