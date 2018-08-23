@@ -13,10 +13,11 @@ import scala.language.{higherKinds, postfixOps}
   Step 6 generalizes getUrlET, getLinesET, wordCountET and wcKleisli.
   These functions are now parameterized with the generic type constructor F[_]
   with replaces Future from the previous step.
-  Due to the new type parameters of these functions they are now defs instead of vals.
+  Due to the new type parameter of these functions they are now defs instead of vals.
+  (A val cannot hav a type parameter in Scala.)
 
   In getUrlET, getLinesET, wordCountET F is constrained to have an Applicative instance: F[_]: Applicative
-  With Applicative[F] we are able to lift teh results of the functions getUrl, getLines, wordCount into the context F.
+  With Applicative[F] we are able to lift the results of the functions getUrl, getLines, wordCount into the context F.
 
   wcKleisli has a Monad constraint on F:   def wcKleisli[F[_] : Monad]
   The Kleisli#andThen internally uses flatMap, hence the Monad constraint on wcKleisli.
@@ -24,13 +25,15 @@ import scala.language.{higherKinds, postfixOps}
   wcEitherT also has a Monad constraint on F:   def wcEitherT[F[_] : Monad]
   It unwraps the Kleisli and yields the EitherT contained in it.
 
-  With this parameterization I am able to provide different implementations, each with another representation of F:
+  With this parameterization I am able to provide different reifications of F:
 
   object UseIdForF uses the Id Monad for F: This makes the Kleisli synchronous as in step 4.
 
-  object UseFutrueForF uses the Furure Monad for F: This makes the Kleisli asynchronous as in step 5.
+  object UseFutrueForF uses the Future Monad for F: This makes the Kleisli asynchronous as in step 5.
+
+  object UseMonixTaskForF uses the monix.eval.Task Monad for F an alternative way of asynchronism.
  */
-object WCApp6EitherTF extends App with Utils {
+object WCApp7EitherTF extends App with Utils {
 
   import Errors._
 

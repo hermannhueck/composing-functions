@@ -2,18 +2,17 @@ package app
 
 import java.net.URL
 
-import scala.io.Source
-import scala.util.{Failure, Success, Try}
+import cats.syntax.either._
 
+import scala.io.Source
 import scala.language.reflectiveCalls
+import scala.util.Try
 
 /*
-  In the 2nd development step I improved getUrlDef and getLinesDef using Try:
-
-  The finally block disappeared through the invocation of method 'using'.
-  The try-catch blocks were replaced by a scala.util.Try
+  In the 3rd development step I further improved getUrlDef and getLinesDef
+  using Either syntax form Cats: Either.fromTry
  */
-object WCApp2TryAutoClose extends App {
+object WCApp3EitherSyntax extends App {
 
   import Errors._
 
@@ -29,20 +28,14 @@ object WCApp2TryAutoClose extends App {
     }
 
   def getUrlDef(urlString: String): Either[Error, URL] =
-    Try {
+    Either.fromTry(Try{
       new URL(urlString)
-    } match {
-      case Success(url) => Right(url)
-      case Failure(ex) => Left(toError(ex))
-    }
+    }).leftMap(toError)
 
   def getLinesDef(url: URL): Either[Error, List[String]] =
-    Try {
+    Either.fromTry(Try{
       using(Source.fromURL(url))(src => src.getLines.toList)
-    } match {
-      case Success(lines) => Right(lines)
-      case Failure(ex) => Left(toError(ex))
-    }
+    }).leftMap(toError)
 
   def wordCountDef(lines: List[String]): List[(String, Int)] =
     lines.mkString

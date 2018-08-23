@@ -5,20 +5,20 @@ import cats.syntax.either._
 import cats.instances.either._
 
 /*
-  In the 4th dev step I use the fact that all three functions return an Either,
-  exactly an Either[Error, ?] where only the right type parameter of the Either varies.
+  In the 5th dev step I use the fact that all three functions (getUrl, getLines, wordCount)
+  return an Either, exactly an Either[Error, ?] where only the right type parameter varies.
 
-  Every function has the structure    A => F[B]
+  Every function has the structure:    A => F[B]
   It transforms an A into a B within the context F[_] where F is the Either[Error, ?] in this case.
 
   The for-comprehension of step 3 becomes a program definition with Kleisli composition.
   getUrl is wrapped into a Kleisli and composed via Kleisli#andThen with getLines andThen wordCount.
-  wcKleisli.run gives us the Function1 which results from the Kleisli composition.
+  wcKleisli.run gives us the Kleisli that results from the composition.
 
   wc returns a Kleisli[Either[Error, ?], String, List[(String, Int)]]
   which wraps a Function1: String => Either[Error, List[(String, Int)]]
  */
-object WCApp4Kleisli extends App with Utils {
+object WCApp5Kleisli extends App with Utils {
 
   import Errors._
 
