@@ -20,6 +20,15 @@ trait Utils {
       closeable.close()
     }
 
+  def tryToEither[A](produceA: => A): Either[Error, A] = {
+
+    import cats.syntax.either._ // import Either syntax from Cats for Either.fromTry
+
+    Either.fromTry(
+      Try { produceA }
+    ).leftMap(toError)
+  }
+
 
   // getUrl as a method (def)
   def getUrlDef(urlString: String): Either[Error, URL] =
@@ -31,12 +40,8 @@ trait Utils {
     }
 
   // getUrl as a Function1 (val)
-  val getUrl: String => Either[Error, URL] = urlString => {
-    import cats.syntax.either._ // import Either syntax from Cats
-    Either.fromTry(Try(
-      new URL(urlString)
-    )).leftMap(toError)
-  }
+  val getUrl: String => Either[Error, URL] = urlString =>
+    tryToEither { new URL(urlString) }
 
 
   // getLines as a method (def)
@@ -49,12 +54,8 @@ trait Utils {
     }
 
   // getLines as a Function1 (val)
-  val getLines: URL => Either[Error, List[String]] = url => {
-    import cats.syntax.either._ // import Either syntax from Cats
-    Either.fromTry(Try(
-      using(Source.fromURL(url))(src => src.getLines.toList)
-    )).leftMap(toError)
-  }
+  val getLines: URL => Either[Error, List[String]] = url =>
+    tryToEither { using(Source.fromURL(url))(src => src.getLines.toList) }
 
 
   // wordCount as a method (def)

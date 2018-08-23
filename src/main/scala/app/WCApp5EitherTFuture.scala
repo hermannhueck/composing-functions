@@ -35,6 +35,9 @@ object WCApp5EitherTFuture extends App with Utils {
 
   val config = Config("https://raw.githubusercontent.com", "hermannhueck", "composing-functions", "master", "README.md")
 
+  // ----- 3 helper functions with the same structure: A => EitherT[Future, Error, B]
+  // ----- Without these wcKleisli would look quite messy.
+
   val getUrlET: String => EitherT[Future, Error, URL] =
     str => EitherT(Future(getUrl(str)))
 
@@ -44,16 +47,20 @@ object WCApp5EitherTFuture extends App with Utils {
   val wordCountET: List[String] => EitherT[Future, Error, List[(String, Int)]] =
     lines => EitherT(Future(wordCount(lines).asRight))
 
+  // ----- Kleisli wrapping a function: A => EitherT[Future, Error, B]
+  //
   val wcKleisli: Kleisli[EitherT[Future, Error, ?], String, List[(String, Int)]] =
     Kleisli(getUrlET) andThen
       getLinesET andThen
       wordCountET
 
+  // unwrapping the Kleisli returns the EitherT
   val wcEitherT: String => EitherT[Future, Error, List[(String, Int)]] =
-    wcKleisli.run // unwrapping the Kleisli returns the EitherT
+    wcKleisli.run
 
+  // running and unwrapping the EitherT returns the Future effect
   val wcFuture: Future[Either[Error, List[(String, Int)]]] =
-    wcEitherT(config.url).value // running and unwrapping the EitherT returns a Future
+    wcEitherT(config.url).value
 
   wcFuture.onComplete (completionHandler) // show result when Future is comnplete
 

@@ -38,7 +38,9 @@ object WCApp6EitherTF extends App with Utils {
 
   val config = Config("https://raw.githubusercontent.com", "hermannhueck", "composing-functions", "master", "README.md")
 
-  // generic function definitions: with a type parameter the vals become defs
+  // ----- 3 helper functions with the same structure: A => EitherT[F, Error, B]
+  // ----- Without these wcKleisli would look quite messy.
+  // ----- With the type parameter F[_] the vals become defs.
 
   def getUrlET[F[_]: Applicative]: String => EitherT[F, Error, URL] =
     str => EitherT(getUrl(str).pure[F])
@@ -49,16 +51,20 @@ object WCApp6EitherTF extends App with Utils {
   def wordCountET[F[_]: Applicative]: List[String] => EitherT[F, Error, List[(String, Int)]] =
     lines => EitherT(wordCount(lines).asRight[Error].pure[F])
 
+  // Kleisli wrapping a function: A => EitherT[F, Error, B] where f is constrained to: F[_]: Monad
+  //
   def wcKleisli[F[_]: Monad]: Kleisli[EitherT[F, Error, ?], String, List[(String, Int)]] =
     Kleisli(getUrlET[F]) andThen
       getLinesET[F] andThen
       wordCountET[F]
 
+  // unwrapping the Kleisli returns the EitherT
   def wcEitherT[F[_]: Monad]: String => EitherT[F, Error, List[(String, Int)]] =
-    wcKleisli[F].run // unwrapping the Kleisli returns the EitherT
+    wcKleisli[F].run
 
+  // running and unwrapping the EitherT returns the F effect
   def wcF[F[_]: Monad]: F[Either[Error, List[(String, Int)]]] =
-    wcEitherT[F].apply(config.url).value // running and unwrapping the EitherT returns a Id
+    wcEitherT[F].apply(config.url).value
 
 
   object UseIdForF {
@@ -82,9 +88,11 @@ object WCApp6EitherTF extends App with Utils {
     import scala.concurrent.{Await, Future}
     import cats.instances.future._
 
-    wcF[Future].onComplete (completionHandler) // show result when Future is comnplete
+    val wcFuture: Future[Either[Error, List[(String, Int)]]] = wcF[Future]
 
-    Await.ready(wcF[Future], 3 seconds) // wait 3 seconds in order not to terminate the app before the future is complete
+    wcFuture.onComplete (completionHandler) // show result when Future is comnplete
+
+    Await.ready(wcF[Future], 3 seconds) // wait max 3 seconds for the Future to complete
   }
 
 
@@ -97,9 +105,11 @@ object WCApp6EitherTF extends App with Utils {
     import scala.concurrent.duration._
     import scala.concurrent.Await
 
-    wcF[Task] runOnComplete completionHandler // show result when Future is comnplete
+    val wcTask: Task[Either[Error, List[(String, Int)]]] = wcF[Task]
 
-    Await.ready(wcF[Task].runAsync, 3 seconds) // wait 3 seconds in order not to terminate the app before the future is complete
+    wcTask runOnComplete completionHandler // show result when Task is comnplete
+
+    Await.ready(wcF[Task].runAsync, 3 seconds) // wait max 3 seconds for the Task to complete
   }
 
 
