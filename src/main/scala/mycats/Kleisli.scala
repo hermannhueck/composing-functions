@@ -28,14 +28,14 @@ case class Kleisli[F[_], A, B](run: A => F[B]) {
     F.map(run(a))(f)
   }
 
-  def mapF[N[_], C](f: F[B] => N[C]): Kleisli[N, A, C] = Kleisli { a =>
+  def mapF[G[_], C](f: F[B] => G[C]): Kleisli[G, A, C] = Kleisli { a =>
     f(run(a))
   }
 
   def apply(a: A): F[B] = run(a)
 }
 
-object Kleisli {
+object Kleisli { self =>
 
   def pure[F[_], A, B](b: B)(implicit F: Monad[F]): Kleisli[F, A, B] =
     Kleisli { _ => F.pure(b) }
@@ -48,7 +48,7 @@ object Kleisli {
 
     implicit def kleisliMonad[F[_] : Monad, A]: Monad[Kleisli[F, A, ?]] = new Monad[Kleisli[F, A, ?]] {
 
-      override def pure[B](b: B): Kleisli[F, A, B] = pure(b)
+      override def pure[B](b: B): Kleisli[F, A, B] = self.pure(b)
 
       override def flatMap[B, C](kl: Kleisli[F, A, B])(f: B => Kleisli[F, A, C]): Kleisli[F, A, C] = kl flatMap f
     }

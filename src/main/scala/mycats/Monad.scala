@@ -16,9 +16,15 @@ object Monad {
 
   object ops {
 
-    implicit class MonadSyntax[F[_] : Monad, A](ctx: F[A]) {
-      def flatMap[B](f: A => F[B]): F[B] = Monad[F].flatMap(ctx)(f)
+    implicit class MonadSyntax[F[_]: Monad, A](fa: F[A]) {
+      def flatMap[B](f: A => F[B]): F[B] = Monad[F].flatMap(fa)(f)
     }
+
+    /*
+    implicit class MonadSyntaxFunction1[P, A](f: Function1[P, A]) {
+      def flatMap[B](g: A => P => B): P => B = Monad[Function1[P, ?]].flatMap(f)(g)
+    }
+    */
   }
 
   def apply[F[_]: Monad]: Monad[F] = implicitly
@@ -56,8 +62,8 @@ object Monad {
   }
 
   implicit def eitherMonad[L]: Monad[Either[L, ?]] = new Monad[Either[L, ?]] {
-    override def pure[R](r: R): Either[L, R] = Right(r)
-    override def flatMap[R1, R2](fa: Either[L, R1])(f: R1 => Either[L, R2]): Either[L, R2] = fa flatMap f
+    override def pure[A](r: A): Either[L, A] = Right(r)
+    override def flatMap[A, B](fa: Either[L, A])(f: A => Either[L, B]): Either[L, B] = fa flatMap f
   }
 
   implicit def tuple2Monad[L: Monoid]: Monad[Tuple2[L, ?]] = new Monad[Tuple2[L, ?]] {
@@ -71,13 +77,16 @@ object Monad {
   }
 
   implicit def function1Monad[P]: Monad[P => ?] = new Monad[P => ?] {
-
-    override def pure[R](r: R): P => R = _ => r
-
-    override def flatMap[R1, R2](fa: P => R1)(f: R1 => P => R2): P => R2 =
-      p => f(fa(p))(p)
-
-    override def map[R1, R2](fa: P => R1)(f: R1 => R2): P => R2 =
-      fa andThen f
+    override def pure[A](r: A): P => A = _ => r
+    override def flatMap[A, B](f: P => A)(g: A => P => B): P => B =
+      p => g(f(p))(p)
   }
+
+  /*
+  implicit def function1Monad[P]: Monad[Function1[P, ?]] = new Monad[Function1[P, ?]] {
+    override def pure[A](r: A): Function1[P, A] = _ => r
+    override def flatMap[A, B](f: Function1[P, A])(g: A => Function1[P, B]): Function1[P, B] =
+      p => g(f(p))(p)
+  }
+  */
 }
