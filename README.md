@@ -1,14 +1,20 @@
-# From Function Composition to Kleisli
+# From Function1#compose to Kleisli
+
+## Different Ways of Function Composition
 
 Fine-grained composability of functions is one of the core advantages of FP.
 
 In this little project I demonstrate different ways of composing functions.
 
 I only deal with *scala.Function1*, because due to currying we can regard
-any function (except Function0) as a *Function1*.
+any function (except *Function0*) as a *Function1*.
 
-Starting with *Function1#compose* and *Function1#andThen*
-I implement *map* and *flatMap* for Function1 what allows me
+I start with the methods on Function1: *compose* and *andThen*.
+Then I show how to fold a List of functions.
+
+Then I turn to and demonstrate function composition with Monoids.
+
+I implement *map* and *flatMap* for *Function1* what allows me
 to compose functions in for-comprehensions. I also make it
 a Monad in order to treat functions as Monads, i.e. to use them
 in any monadic context.
@@ -16,8 +22,6 @@ in any monadic context.
 Next I implement my own *mycats.Kleisli* similar to *cats.data.Kleisli*
 and show its usage with *flatMap*, *flatMapF*, *andThen* and *compose*.
 I then show the *Reader* Monad, a *Kleisli* simplified with *Id*.
-
-Finally I turn to and demonstrate function composition with Monoids.
 
 All this can be found in package *demo*.
 
