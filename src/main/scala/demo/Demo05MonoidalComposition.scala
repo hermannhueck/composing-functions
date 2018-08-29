@@ -3,7 +3,7 @@ package demo
 import mycats.Monoid
 import Monoid.ops._
 
-object Demo3ComposingWithMonoid extends App {
+object Demo05MonoidalComposition extends App {
 
   println("\n===== Composition with Monoid[A => A]")
 

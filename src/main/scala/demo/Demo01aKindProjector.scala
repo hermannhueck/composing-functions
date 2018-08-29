@@ -2,7 +2,7 @@ package demo
 
 import mycats.Functor
 
-object Demo1aKindProjector {
+object Demo01aKindProjector {
 
   // Code compiles without kind-projector.
   // It uses a type alias within a structural type.

@@ -3,7 +3,7 @@ package demo
 import mycats.Monad.ops._
 import mycats.{Id, Kleisli, Reader}
 
-object Demo7Reader extends App { self =>
+object Demo10Reader extends App { self =>
 
   println("\n===== Reader Monad")
 

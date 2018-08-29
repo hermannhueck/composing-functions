@@ -3,13 +3,12 @@ package demo
 import mycats.{Functor, Monad}
 import Functor.ops._
 import Monad.ops._
-import app.Utils
 
-object Demo4FunctorAndMonad extends App { self =>
+object Demo07Monad extends App { self =>
 
   def getInput: String = {
 
-    val utils = new Utils {}
+    val utils = new app.Utils {}
     import utils.{getUrl, getLines}
 
     // val url = "https://raw.githubusercontent.com/hermannhueck/composing-functions/master/README.md"
@@ -17,18 +16,7 @@ object Demo4FunctorAndMonad extends App { self =>
     getUrl(url).flatMap(getLines).map(_.mkString("\n")).toOption.get
   }
 
-  println("\n===== Mapping and FlatMapping Functions")
-
-  println("----- Functor[Function1]#map (via implicit conversion)")
-
-  val s2i: String => Int = _.toInt
-  val plus2: Int => Int = _ + 2
-  val div10By: Int => Double = 10.0 / _
-  val d2s: Double => String = _.toString + " !!!"
-
-  val fMapped = s2i map plus2 map div10By map d2s // requires -Ypartial-unification
-  val res0 = fMapped("3")
-  println(res0) // 2.0 !!!
+  println("\n===== FlatMapping Functions")
 
   println("----- Monad[Function1]#flatMap (via implicit conversion)")
 

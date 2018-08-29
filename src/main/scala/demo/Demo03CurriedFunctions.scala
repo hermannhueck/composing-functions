@@ -1,6 +1,6 @@
 package demo
 
-object Demo1cCurriedFunctions extends App {
+object Demo03CurriedFunctions extends App {
 
   println("\n----- Currying and Uncurrying")
 
@@ -23,15 +23,19 @@ object Demo1cCurriedFunctions extends App {
 
   val applied1st = sumCurried(1)
   // applied1st: Int => (Int => Int) = scala.Function3$$Lambda$4348/1531035406@5a231dc1
+  println(applied1st)
 
   val applied2nd = applied1st(2)
   // applied2nd: Int => Int = scala.Function3$$Lambda$4349/402963549@117e96fb
+  println(applied2nd)
 
   val applied3rd = applied2nd(3)
   // applied3rd: Int = 6
+  println(applied3rd)
 
   val appliedAllAtOnce = sumCurried(1)(2)(3)
   // appliedAllAtOnce: Int = 6
+  println(appliedAllAtOnce)
 
   println("\n-----\n")
 }

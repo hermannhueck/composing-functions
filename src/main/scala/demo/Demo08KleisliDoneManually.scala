@@ -4,7 +4,7 @@ import mycats.Monad
 
 import scala.language.higherKinds
 
-object Demo5KleisliDoneManually extends App {
+object Demo08KleisliDoneManually extends App {
 
   println("\n===== Kleisli composition done manually")
 
@@ -67,8 +67,8 @@ object Demo5KleisliDoneManually extends App {
   val kleisliComposed1: String => Option[String] =
     kleisli(kleisli(kleisli(s2iOpt, plus2Opt), div10ByOpt), d2sOpt)
 
-  val resKleisli = kleisliComposed1("3")    // Some(2.0 !!!)
-  resKleisli foreach println
+  val resKleisli1 = kleisliComposed1("3")    // Some(2.0 !!!)
+  resKleisli1 foreach println
 
   implicit class RichFunction1[F[_]: Monad, A, B](f: A => F[B]) {
     def kleisli[C](g: B => F[C]): A => F[C] = a => Monad[F].flatMap(f(a))(g)
