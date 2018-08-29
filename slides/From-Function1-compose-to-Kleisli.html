@@ -162,28 +162,44 @@ https://github.com/hermannhueck/composing-functions
 
 ---
 
-# Abstract
+# Abstract (1/2)
 
 Fine-grained composability of functions is one of the core advantages of FP.
 
-In this talk I demonstrate different ways of composing functions.
+Treating "Functions as Data" means that we can ...
+- store a function in a val
+- pass it as args to other (higher order) functions (HOFs)
+- return a function from other functions
+- process/manipulate a function like data
+- organize functions in data structures like List, Option etc.
+- wrap a function in a case class
+
+In this talk I demonstrate different ways of function composition
+(and manipulation - what is often the same).
 
 I only deal with *scala.Function1*, because due to currying we can regard
-any function (except *Function0*) as a *Function1*.
+any function (except *Function0*) as a *Function1*. Curried functions are easier to compose.
+
+---
+
+# Abstract (2/2)
 
 I start with the methods on Function1: *compose* and *andThen*.
 Then I show how to fold a List of functions.
 
-Then I turn to and demonstrate function composition with Monoids.
+Then I turn to function composition with Monoids.
 
-I implement *map* and *flatMap* for *Function1* what allows me
-to compose functions in for-comprehensions. I also make it
-a Monad in order to treat functions as Monads, i.e. to use them
-in any monadic context.
+Functions are Functors, i.e they can be mapped over.
+
+Functions are Monads, i.e they can be flatMapped over.
+
+With *map* and *flatMap* we can write for-comprehensions over functions.
+As Monads, we can use them in any monadic context.
 
 Next I implement my own *mycats.Kleisli* similar to *cats.data.Kleisli*
 and show its usage with *flatMap*, *flatMapF*, *andThen* and *compose*.
-I then show the *Reader* Monad, a *Kleisli* simplified with *Id*.
+
+Finally I show the *Reader* Monad, a *Kleisli* simplified with *Id*.
 
 ---
 
@@ -193,10 +209,12 @@ I then show the *Reader* Monad, a *Kleisli* simplified with *Id*.
 1. Preliminaries
   - Kind Projector
   - Partial Unification
-  - Curried Functions
+1. Functions as Data
+1. Curried Functions
 1. *Function1#compose* and *Function1#andThen*
-1. Composing Functions with Monoid
-1. *Function1* as Functor and Monad
+1. Monoidal Function Composition
+1. *Function1* as Functor
+1. *Function1* as Monad
 1. Kleisli Composition done manually
 1. *case class Kleisli*
 1. Reader Monad
@@ -210,11 +228,12 @@ class: middle, center
 <br/>
 <br/>
 <br/>
+<br/>
+<br/>
 
 .left[
 ### 1.1 Kind Projector
 ### 1.2 Partial Unification
-### 1.3 Currying
 ]
 
 ---
@@ -232,7 +251,7 @@ addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.7")
 
 
 .footnote[
-&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo1aKindProjector*
+&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo01aKindProjector*
 ]
 
 ---
@@ -354,7 +373,7 @@ implicit def eitherFunctor[L]: Functor[Either[L, ?]] =
 
 ---
 
-## 1.2 Compiler Flag *-Ypartial-unification
+## 1.2 Compiler Flag *-Ypartial-unification*
 <br/>
 <br/>
 <br/>
@@ -366,7 +385,7 @@ scalacOptions += "-Ypartial-unification"
 ```
 
 .footnote[
-&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo1bPartialUnification*
+&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo01bPartialUnification*
 ]
 
 ---
@@ -377,6 +396,7 @@ scalacOptions += "-Ypartial-unification"
 def foo[F[_], A](fa: F[A]): String = fa.toString
 
 foo { x: Int => x * 2 }
+
 
 -------
 [error] no type parameters for method foo: (fa: F[A])String exist
@@ -435,6 +455,9 @@ when you use a left-biased type like Scalactic's *Or* data type (a left-biased *
 ---
 
 ## When to use *kind-projector* and *-Ypartial-unification* ?
+<br/>
+
+--
 
 Enable plugin and the flag when using a Functor, Applicative or a Monad instance
 for higher-kinded types which take more than one type parameter. *Either*, *Tuple2*
@@ -454,7 +477,96 @@ https://gist.github.com/djspiewak/7a81a395c461fd3a09a6941d4cd040f2
 
 ---
 
-## 1.3 Curried functions
+class: middle, center
+
+# 2. Functions as Data
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+&nbsp;
+
+---
+
+## Treating Functions as Data (1/2)
+
+allows us to ...
+
+--
+
+- store a function in a val
+
+```scala
+val str2Int: String => Int = str => str.toInt
+```
+
+--
+
+- pass it as arg to other (higher order) functions (HOFs)
+
+```scala
+val mapped = List("1", "2", "3").map(str2Int)
+```
+
+--
+
+- return a function from other functions
+
+```scala
+val plus100: Int => Int = { i =>
+  val j = manipulate(i)
+  j + 100
+}
+```
+
+--
+
+- process/manipulate a function like data
+
+```scala
+str2Int map plus100     // Functor instance for Function1 must be defined
+```
+
+---
+
+## Treating Functions as Data (2/2)
+
+allows us to ...
+
+--
+
+- organize functions (like data) in data structures like List, Option etc.
+
+```scala
+val functions: List[Int => Int] = List(_ + 1, _ + 2, _ + 3)
+val f[Int => Int] = functions.foldRight(...)(...)
+```
+
+--
+
+- wrap a function in a case class *MyWrapper*
+
+We can define methods on *MyWrapper* which manipulate the wrapped function
+and return the manipulation result again wrapped in a new instance of *case class MyWrapper*.
+
+
+```scala
+case class MyWrapper[A, B](run: A => B) {
+
+  def map[C](f: B => C): MyWrapper[A, C] = ???
+
+  def flatMap[C](f: B => MyWrapper[A, C]): MyWrapper[A, C] = ???
+
+  // other methods ...
+}
+```
+
+---
+
+class: middle, center
+
+# 3. Curried functions
 <br/>
 <br/>
 <br/>
@@ -462,7 +574,7 @@ https://gist.github.com/djspiewak/7a81a395c461fd3a09a6941d4cd040f2
 <br/>
 
 .footnote[
-&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo1cCurriedFunctions*
+&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo03CurriedFunctions*
 ]
 
 ---
@@ -529,24 +641,28 @@ val sumCurried: Int => Int => Int => Int = sum3Ints.curried
 
 ```scala
 val applied1st: Int => Int => Int = sumCurried(1)
+// applied1st: Int => (Int => Int) = scala.Function3$$Lambda$4348/1531035406@5a231dc1
 ```
 
 --
 
 ```scala
 val applied2nd: Int => Int = applied1st(2)
+// applied2nd: Int => Int = scala.Function3$$Lambda$4349/402963549@117e96fb
 ```
 
 --
 
 ```scala
 val applied3rd: Int = applied2nd(3)
+// applied3rd: Int = 6
 ```
 
 --
 
 ```scala
 val appliedAllAtOnce: Int = sumCurried(1)(2)(3)
+// appliedAllAtOnce: Int = 6
 ```
 
 ---
@@ -588,7 +704,7 @@ res5: List[Int] = List(0,1)
 
 class: middle, center
 
-# 2. *Function1#compose* and Function1#apply
+# 4. *Function1#compose* and Function1#apply
 <br/>
 <br/>
 <br/>
@@ -597,7 +713,7 @@ class: middle, center
 &nbsp;
 
 .footnote[
-&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo2ComposingFunctions*
+&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo04ComposingFunctions*
 ]
 
 ---
@@ -650,47 +766,16 @@ val d2s: Double => String = _.toString
 
 ```scala
 // Function1#compose
-val fComposed0: String => String = d2s compose div10By compose plus2 compose s2i
-val res0 = fComposed0("3") // 2.0 !!!
+val fComposed1: String => String = d2s compose div10By compose plus2 compose s2i
+val res1 = fComposed1("3") // 2.0 !!!
 ```
 
 --
 
 ```scala
 // Function1#andThen
-val fComposed1: String => String = s2i andThen plus2 andThen div10By andThen d2s
-val res1 = fComposed1("3") // 2.0 !!!
-```
-
----
-
-## Function composition in Haskell
-<br/>
-
-```haskell
-s2i :: String -> Int
-s2i = read
-
-plus2 :: Int -> Int
-plus2 = (+2)
-
-div10By :: Int -> Double
-div10By x = (10.0 / fromIntegral x)
-
-d2s :: Double -> String
-d2s d = (show d) ++ " !!!"
-```
-<br/>
-
---
-
-```haskell
--- (.) is the function composition operator
-fComposed :: String -> String
-fComposed = d2s . div10By . plus2 . s2i
-
-result = fComposed "3"
--- "2.0 !!!"
+val fComposed2: String => String = s2i andThen plus2 andThen div10By andThen d2s
+val res2 = fComposed2("3") // 2.0 !!!
 ```
 
 ---
@@ -735,7 +820,7 @@ Hence *foldRight* and *foldLeft* return different results.
 
 class: middle, center
 
-# 3. Composing Functions with Monoid
+# 5. Monoidal Function Composition
 <br/>
 <br/>
 <br/>
@@ -744,7 +829,7 @@ class: middle, center
 &nbsp;
 
 .footnote[
-&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo3ComposingWithMonoid*
+&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo05ComposingWithMonoid*
 ]
 
 ---
@@ -776,6 +861,8 @@ You cannot compose functions of type *A => B*, only functions of type *A => A*.
 
 ```scala
 // This one is the default Function1-Monoid in Cats
+// It requires A to be a Monoid too.
+//
 implicit def function1Monoid[A: Monoid]: Monoid[A => A] = new Monoid[A => A] {
   
   override def empty: A => A =
@@ -789,7 +876,7 @@ implicit def function1Monoid[A: Monoid]: Monoid[A => A] = new Monoid[A => A] {
 --
 
 - This instance defines a Monoid for Functions of type *A => A*.
-- It requires *A* to be a Monoid too.
+- It requires type *A* to be a Monoid too.
 - *empty* defines a function which ignores it's input and returns *Monoid[A].empty*.
 - *combine* takes two functions *f* and *g*, invokes *f(a)* and *g(a)* on it's input and returns the combined result.
 
@@ -810,11 +897,11 @@ val h: Int => Int = _ + 100
 ```scala
 import Monoid.function1Monoid
 
-println(  (f combine g)(4)  )                                 // 13
-println(  (f |+| g)(4)  )                                     // 13
+(f combine g)(4)                                 // 13
+(f |+| g)(4)                                     // 13
 
-println(  (f |+| g|+| h)(4)  )                                // 117
-println(  Monoid[Int => Int].combineAll(List(f, g, h))(4)  )  // 117
+(f |+| g |+| h)(4)                               // 117
+Monoid[Int => Int].combineAll(List(f, g, h))(4)  // 117
 ```
 
 --
@@ -837,7 +924,7 @@ implicit def function1ComposeMonoid[A]: Monoid[A => A] = new Monoid[A => A] {
 
 --
 
-- This instance composes the Functions *Function1#compose*.
+- This instance composes the Functions with *Function1#compose*.
 
 --
 
@@ -845,11 +932,11 @@ implicit def function1ComposeMonoid[A]: Monoid[A => A] = new Monoid[A => A] {
 ```scala
 import Monoid.function1ComposeMonoid
 
-println(  (f combine g)(4)  )                                 // 9
-println(  (f |+| g)(4)  )                                     // 9
+(f combine g)(4)                                 // 9
+(f |+| g)(4)                                     // 9
 
-println(  (f |+| g|+| h)(4)  )                                // 209
-println(  Monoid[Int => Int].combineAll(List(f, g, h))(4)  )  // 209
+(f |+| g |+| h)(4)                               // 209
+Monoid[Int => Int].combineAll(List(f, g, h))(4)  // 209
 ```
 
 ---
@@ -867,7 +954,7 @@ implicit def function1AndThenMonoid[A]: Monoid[A => A] = new Monoid[A => A] {
 
 --
 
-- This instance composes the Functions *Function1#andThen*.
+- This instance composes the Functions with *Function1#andThen*.
 
 --
 
@@ -875,18 +962,18 @@ implicit def function1AndThenMonoid[A]: Monoid[A => A] = new Monoid[A => A] {
 ```scala
 import Monoid.function1AndThenMonoid
 
-println(  (f combine g)(4)  )                                 // 10
-println(  (f |+| g)(4)  )                                     // 10
+(f combine g)(4)                                 // 10
+(f |+| g)(4)                                     // 10
 
-println(  (f |+| g|+| h)(4)  )                                // 110
-println(  Monoid[Int => Int].combineAll(List(f, g, h))(4)  )  // 110
+(f |+| g |+| h)(4)                               // 110
+Monoid[Int => Int].combineAll(List(f, g, h))(4)  // 110
 ```
 
 ---
 
 class: middle, center
 
-# 4. *Function1* as Functor and Monad
+# 6. *Function1* as Functor
 <br/>
 <br/>
 <br/>
@@ -895,7 +982,7 @@ class: middle, center
 &nbsp;
 
 .footnote[
-&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo4FunctorAndMonad*
+&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo06Functor*
 ]
 
 ---
@@ -904,7 +991,7 @@ class: middle, center
 <br/>
 
 A Functor is any Context F[\_] that provides a function *map* ...<br/>
-and abides by the Functor laws (which I don't present here).
+and abides by the Functor laws (which are not presented here).
 <br/>
 <br/>
 
@@ -945,17 +1032,18 @@ implicit def eitherFunctor[L]: Functor[Either[L, ?]] =
 
 --
 
-<br/>
 Using the *Function1* Functor:
 
 ```scala
-val h = Functor[Function1].map(f)(g)
+val f: Int => Int = _ + 3
+val g: Int => Int = _ * 2
+val h = Functor[Function1[Int, ?]].map(f)(g)
+val res = h(2)  // 10
 ```
 
 ---
 
 ## Functor syntax
-<br/>
 
 defined as <u>implicit conversion</u> ...
 
@@ -978,7 +1066,6 @@ implicit class FunctorSyntax[F[_]: Functor, A](fa: F[A]) {
   def map[B](f: A => B): F[B] = Functor[F].map(fa)(f)
 }
 ```
-<br/>
 
 --
 
@@ -986,7 +1073,10 @@ This allows for convenient invocation of *map*<br/>
 as if *map* were a method of *Function1*:
 
 ```scala
+val f: Int => Int = _ + 3
+val g: Int => Int = _ * 2
 val h = f map g
+val res = h(2)  // 10
 ```
 
 ---
@@ -1019,11 +1109,27 @@ val res1 = fMapped("3") // 2.0 !!!
 
 ---
 
+class: middle, center
+
+# 7. *Function1* as Monad
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+&nbsp;
+
+.footnote[
+&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo07Monad*
+]
+
+---
+
 ## Monad
 <br/>
 
 A Monad is any Context F[\_] that provides the functions *pure* and *flatMap* ...<br/>
-and abides by the Monad laws (which I don't present here).
+and abides by the Monad laws (which are not presented here).
 <br/>
 <br/>
 
@@ -1113,12 +1219,12 @@ val h = f flatMap g
 instead of:
 
 ```scala
-val h = Monad[Function1].flatMap(f)(g)
+val h = Functor[Function1[Int, ?]].flatMap(f)(g)
 ```
 
 ---
 
-## A pipeline of functions
+## A pipeline of functions (Reader Monad)
 --
 
 ```scala
@@ -1133,26 +1239,26 @@ FlatMapping over *Function1*:
 
 ```scala
 val computeStatistics1: String => (Int, Int, Int) =
-  countLines flatMap { nLines =>      // define a pure program; this does nothing
+  countLines flatMap { nLines =>      // define a pure program which does nothing
     countWords flatMap { nWords =>
       countChars map { nChars =>
         (nLines, nWords, nChars)
-      } } }                                 // execute the program (impure)
-val stat1: (Int, Int, Int) = computeStatistics1(getInput)
+      } } }
+val stat1: (Int, Int, Int) = computeStatistics1(getInput) // exec program (impure)
 ```
 
 --
 
-with a for-comprehension:
+alternatively with a for-comprehension:
 
 ```scala
 val computeStatistics2: String => (Int, Int, Int) =
-  for {                               // define a pure program; this does nothing
+  for {                               // define a pure program which does nothing
     nLines <- countLines // uses Function1#flatMap
     nWords <- countWords
     nChars <- countChars
-  } yield (nLines, nWords, nChars)          // execute the program (impure)
-val stat2: (Int, Int, Int) = computeStatistics2(getInput)
+  } yield (nLines, nWords, nChars)
+val stat2: (Int, Int, Int) = computeStatistics2(getInput) // exec program (impure)
 ```
 
 ---
@@ -1188,13 +1294,13 @@ val login1Ok = checkLogin(1, "zerocool")(db) // true
 val login4Ok = checkLogin(4, "davinci")(db) // false
 ```
 
-Example taken from "Scala with Cats" (see chapter Resource for link)
+Example taken from "Scala with Cats" (see chapter Resources for link)
 
 ---
 
 class: middle, center
 
-# 5. Kleisli composition done manually
+# 8. Kleisli composition done manually
 <br/>
 <br/>
 <br/>
@@ -1203,7 +1309,7 @@ class: middle, center
 &nbsp;
 
 .footnote[
-&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo5KleisliDoneManually*
+&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo08KleisliDoneManually*
 ]
 
 ---
@@ -1217,16 +1323,16 @@ class: middle, center
 val s2iOpt: String => Option[Int] = s => Option(s.toInt)
 val plus2Opt: Int => Option[Int] = i => Option(i + 2)
 val div10ByOpt: Int => Option[Double] = i => Option(10.0 / i)
-val d2sOpt: Double => Option[String] = d => Option(d.toString)
+val d2sOpt: Double => Option[String] = d => Option(d.toString + " !!!")
 ```
 
-These functions take an A and return a B inside of a context F[\_]: A => F[B]<br/>
-In our case F[\_] is *Option*, but could be *List*, *Future* etc.
+These functions take an *A* and return a *B* inside of a context *F[\_]: A => F[B]*<br/>
+In our case *F[\_]* is *Option*, but could be *List*, *Future* etc.
 
 --
 
 We want to compose these functions to a single function
-which is the fed with some input string.
+which is then fed with some input string.
 
 --
 
@@ -1263,7 +1369,7 @@ val res1: Option[String] = flatMappedOnOpt1("3") // Some(2.0)
 
 --
 
-with a for-comprehension (this looks nicer):
+or with a for-comprehension (this looks nicer):
 
 ```scala
 val flatMappedOnOpt2: String => Option[String] = input => for {
@@ -1293,6 +1399,8 @@ Kleisli composition takes two functions *A => F[B]* and *B => F[C]* and yields a
 
 Let's define *kleisli*:
 
+--
+
 ```scala
 def kleisli[F[_]: Monad, A, B, C](f: A => F[B], g: B => F[C]): A => F[C] =
   a => Monad[F].flatMap(f(a))(g)
@@ -1306,13 +1414,13 @@ Using *kleisli*:
 val kleisliComposed1: String => Option[String] =
   kleisli(kleisli(kleisli(s2iOpt, plus2Opt), div10ByOpt), d2sOpt)
 
-val resKleisli = kleisliComposed1("3")
+val resKleisli1 = kleisliComposed1("3")    // 2.0 !!!
 ```
 
 --
 
 This works, but is still not exactly what we want.<br/>
-*kleisli* should be a method of *Function1*.
+*kleisli* should behave like a method of *Function1*.
 
 ---
 
@@ -1339,7 +1447,7 @@ Using it:
 ```scala
 val kleisliComposed2: String => Option[String] =
   s2iOpt kleisli plus2Opt kleisli div10ByOpt kleisli d2sOpt
-kleisliComposed2("3") foreach println
+kleisliComposed2("3") foreach println    // 2.0 !!!
 ```
 
 --
@@ -1358,7 +1466,7 @@ kleisliComposed2("3") foreach println
 
 class: middle, center
 
-# 6. *case class Kleisli*
+# 9. *case class Kleisli*
 <br/>
 <br/>
 <br/>
@@ -1367,7 +1475,7 @@ class: middle, center
 &nbsp;
 
 .footnote[
-&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo6KleisliCaseClass*
+&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo09KleisliCaseClass*
 ]
 
 ---
@@ -1375,8 +1483,8 @@ class: middle, center
 ## *case class Kleisli*
 <br/>
 
-Cats does not provide a *kleisli* method on *Function1*.
-Cats provides a *case class Kleisli* with the functionality shown above and more.
+That was my artefact. Cats does not provide a *kleisli* method on *Function1*.
+Cats instead provides a *case class Kleisli* with the functionality shown above and more.
 
 --
 
@@ -1488,7 +1596,7 @@ kleisli2("3") foreach println
 
 As we saw *Kleisli#flatMap* is not very convenient.
 We have to bind values to variables and thread them through the for-comprehension.
-*flatMapF* is simpler.
+*flatMapF* is easier to use.
 
 --
 
@@ -1595,7 +1703,7 @@ def compose[Z](that: Kleisli[F, Z, A])(implicit M: Monad[F]): Kleisli[F, Z, B] =
 
 class: middle, center
 
-# 7. Reader Monad
+# 10. Reader Monad
 <br/>
 <br/>
 <br/>
@@ -1604,7 +1712,7 @@ class: middle, center
 &nbsp;
 
 .footnote[
-&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo7Reader*
+&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo10Reader*
 ]
 
 ---
@@ -1612,7 +1720,7 @@ class: middle, center
 ## Reader again
 <br/>
 
-We already saw, that the Function1 Monad is the Reader Monad.
+We already saw, that the *Function1* Monad is the *Reader* Monad.
 
 But *Kleisli* can also be used as *Reader*, if *F[\_]* is fixed to the *Id* context.
 
@@ -1657,7 +1765,7 @@ val reader1: String => String = input => for {
   s <- Reader(d2s).run(d)
 } yield s
 
-println(reader1("3"))
+println(reader1("3"))     // 2.0 !!!
 ```
 
 --
@@ -1677,7 +1785,7 @@ all these intermediate identifiers in the for-comprehension.
 val reader2 =
   Reader(s2i) andThen Reader(plus2) andThen Reader(div10By) andThen Reader(d2s)
 
-println(reader2("3"))
+println(reader2("3"))     // 2.0 !!!
 ```
 
 --
@@ -1687,13 +1795,14 @@ println(reader2("3"))
 val reader3 =
   Reader(s2i) andThen plus2 andThen div10By andThen d2s
 
-println(reader3("3"))
+println(reader3("3"))     // 2.0 !!!
 ```
 
 --
 
 <br/>
-All methods of *Kleisli* are available for Reader, because *Kleisli* <u>is</u> *Reader*.
+All methods of *Kleisli* are available for Reader,<br/>
+because *Kleisli* <u>**is**</u> *Reader* with *Id*.
 
 ---
 
@@ -1728,13 +1837,13 @@ val loginOk1 = checkLogin(1, "zerocool").run(db) // true
 val loginOk2 = checkLogin(4, "davinci").run(db) // false
 ```
 
-Example taken from "Scala with Cats" (see chapter Resource for link)
+Example taken from "Scala with Cats" (see chapter Resources for link)
 
 ---
 
 class: middle, center
 
-# 8. Resources
+# 11. Resources
 <br/>
 <br/>
 <br/>
@@ -1749,54 +1858,32 @@ class: middle, center
 <br/>
 
 - Code and Slides of this Talk:<br/>
-  https://github.com/hermannhueck/use-applicative-where-applicable
+  https://github.com/hermannhueck/composing-functions
 
-- Cats documentation:<br/>
-  https://typelevel.org/cats/typeclasses/applicative.html<br/>
-  https://typelevel.org/cats/typeclasses/traverse.html<br/>
-  https://typelevel.org/cats/datatypes/validated.html
-
-- Herding Cats, Day 2 and 3:<br/>
-  http://eed3si9n.com/herding-cats/Functor.html<br/>
-  http://eed3si9n.com/herding-cats/Semigroupal.html<br/>
-  http://eed3si9n.com/herding-cats/Apply.html<br/>
-  http://eed3si9n.com/herding-cats/Applicative.html
-
-- "Scala with Cats", Chapters 6 and 7<br/>
+- "Scala with Cats"<br/>
   Book by Noel Welsh and Dave Gurnell<br/>
   https://underscore.io/books/scala-with-cats/
+
+- "Functional Programming in Scala"<br/>
+  Book by Paul Chiusano and Dave Gurnell<br/>
+  https://www.manning.com/books/functional-programming-in-scala
+
+- Cats documentation for *Kleisli*:<br/>
+  https://typelevel.org/cats/datatypes/kleisli.html
   
 ---
-
+ 
 ## Scala Resources (2/2)
 
 <br/>
 
-- Live Coding Tutorial on Functor and Applicative by Michael Pilquist<br/>
-  FSiS Part 1 - Type Constructors, Functors, and Kind Projector<br/>
-  https://www.youtube.com/watch?v=Dsd4pc99FSY<br/>
-  FSiS Part 2 - Applicative type class<br/>
-  https://www.youtube.com/watch?v=tD_EyIKqqCk
+- Miles Sabin's pull request for partial unification:<br/>
+  https://github.com/scala/scala/pull/5102
 
----
-
-## Haskell Resources
-
-<br/>
-
-- Learn You a Haskell for Great Good!, Chapter 11<br/>
-  Online book by Miran Lipovaca<br/>
-  http://learnyouahaskell.com/functors-applicative-functors-and-monoids
-
-- Applicative Programming with Effects<br/>
-  Conor McBride and Ross Paterson in Journal of Functional Programming 18:1 (2008), pages 1-13<br/>
-  http://www.staff.city.ac.uk/~ross/papers/Applicative.pdf
-
-- The Essence of the Iterator Pattern<br/>
-  Jeremy Gibbons and Bruno C. d. S. Oliveira, Oxford University Computing Laboratory<br/>
-  https://www.cs.ox.ac.uk/jeremy.gibbons/publications/iterator.pdf
-
-
+- "Explaining Miles's Magic:<br/>
+  Gist of Daniel Spiewak on partial unification
+  https://gist.github.com/djspiewak/7a81a395c461fd3a09a6941d4cd040f2
+  
 ---
 
 class: middle, center
