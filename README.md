@@ -4,24 +4,38 @@
 
 Fine-grained composability of functions is one of the core advantages of FP.
 
-In this little project I demonstrate different ways of composing functions.
+Treating "Functions as Data" means that we can ...
+- store a function in a val
+- pass it as args to other (higher order) functions (HOFs)
+- return a function from other functions
+- process/manipulate a function like data
+- organize functions in data structures like List, Option etc.
+- wrap a function in a case class
+
+In this talk I demonstrate different ways of function composition
+(and manipulation - what is often the same).
 
 I only deal with *scala.Function1*, because due to currying we can regard
-any function (except *Function0*) as a *Function1*.
+any function (except *Function0*) as a *Function1*. Curried functions are easier to compose.
 
 I start with the methods on Function1: *compose* and *andThen*.
 Then I show how to fold a List of functions.
 
-Then I turn to and demonstrate function composition with Monoids.
+Then I turn to function composition with Monoids.
 
-I implement *map* and *flatMap* for *Function1* what allows me
-to compose functions in for-comprehensions. I also make it
-a Monad in order to treat functions as Monads, i.e. to use them
-in any monadic context.
+Functions are Functors, i.e they can be mapped over.
+
+Functions are Monads, i.e they can be flatMapped over.
+
+With *map* and *flatMap* we can write for-comprehensions over functions.
+As Monads, we can use them in any monadic context.
 
 Next I implement my own *mycats.Kleisli* similar to *cats.data.Kleisli*
 and show its usage with *flatMap*, *flatMapF*, *andThen* and *compose*.
-I then show the *Reader* Monad, a *Kleisli* simplified with *Id*.
+
+Finally I show the *Reader* Monad, a *Kleisli* simplified with *Id*.
+
+--
 
 All this can be found in package *demo*.
 
