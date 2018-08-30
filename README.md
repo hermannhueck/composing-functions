@@ -38,11 +38,14 @@ Finally I show the *Reader* Monad, a *Kleisli* simplified with *Id*.
 --
 
 All this can be found in package *demo*.
+Most of the demo programs are provided in two versions,
+one using the Cats library, the other one using
+my own implementations of categories provided in package *mycats*.
 
 --
 
-Another App (in package *app*) is in *app.WCApp[1-7]*.scala*.
-This App implements a simple word count (WC) for a text resource on github.
+Another App (in package *kleisliapp*) is in *kleisliapp.WCApp[1-7]*.scala*.
+This App is a Kleisli-demo. It implements a simple word count (WC) for a text resource.
 This App is implmented in 7 subsequent steps, one improving the other.
 
 - Step 1: First draft: synchronous impl with try-catch-finally
