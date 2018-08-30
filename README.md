@@ -46,7 +46,7 @@ my own implementations of categories provided in package *mycats*.
 
 Another App (in package *kleisliapp*) is in *kleisliapp.WCApp[1-7]*.scala*.
 This App is a Kleisli-demo. It implements a simple word count (WC) for a text resource.
-This App is implmented in 7 subsequent steps, one improving the other.
+The App is implmented in 7 subsequent steps, one improving the other.
 
 - Step 1: First draft: synchronous impl with try-catch-finally
 - Step 2: Synchronous impl with *Try* and auto-closing of the resource
