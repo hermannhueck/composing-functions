@@ -1,4 +1,4 @@
-package app
+package kleisliapp
 
 final case class Config(baseUrl: String,
                         user: String,

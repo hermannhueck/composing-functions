@@ -1,8 +1,8 @@
-package app
+package kleisliapp
 
 import java.net.URL
 
-import app.Errors.{Error, toError}
+import kleisliapp.Errors.{Error, toError}
 
 import scala.io.Source
 import scala.util.{Failure, Success, Try}

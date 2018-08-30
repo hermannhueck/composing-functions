@@ -1,4 +1,4 @@
-package app
+package kleisliapp
 
 import cats.data.Kleisli
 import cats.syntax.either._

@@ -8,7 +8,7 @@ object Demo07aMonad_Cats extends App {
 
   def getInput: String = {
 
-    val utils = new app.Utils {}
+    val utils = new kleisliapp.Utils {}
     import utils.{getUrl, getLines}
 
     // val url = "https://raw.githubusercontent.com/hermannhueck/composing-functions/master/README.md"

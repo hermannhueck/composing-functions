@@ -1,4 +1,4 @@
-package app
+package kleisliapp
 
 import java.net.URL
 

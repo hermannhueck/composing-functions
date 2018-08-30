@@ -4,16 +4,6 @@ import mycats.Functor.syntax._
 
 object Demo06Functor extends App {
 
-  def getInput: String = {
-
-    val utils = new app.Utils {}
-    import utils.{getLines, getUrl}
-
-    // val url = "https://raw.githubusercontent.com/hermannhueck/composing-functions/master/README.md"
-    val url = "file:./README.md"
-    getUrl(url).flatMap(getLines).map(_.mkString("\n")).toOption.get
-  }
-
   println("\n===== Mapping Functions")
 
   println("----- Functor[Function1]#map (via implicit conversion)")

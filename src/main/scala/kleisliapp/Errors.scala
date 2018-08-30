@@ -1,4 +1,4 @@
-package app
+package kleisliapp
 
 import java.io.{FileNotFoundException, IOException}
 import java.net.{MalformedURLException, UnknownHostException}
