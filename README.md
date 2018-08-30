@@ -49,10 +49,10 @@ This App is a Kleisli-demo. It implements a simple word count (WC) for a text re
 This App is implmented in 7 subsequent steps, one improving the other.
 
 - Step 1: First draft: synchronous impl with try-catch-finally
-- Step 2: Synchronous impl with Try and auto-closing of the resource
-- Step 3: Uses Cats' Either syntax to easily convert a Try to an Either
+- Step 2: Synchronous impl with *Try* and auto-closing of the resource
+- Step 3: Uses Cats' Either syntax to easily convert a *Try* to an *Either*
 - Step 4: Goes functional. It turns methods (defs) into functions (vals).
-- Step 5: Uses Kleisli wrapping an Either
-- Step 6: Uses Kleisli wrapping an EitherT which wraps a Future wrapping an Either
-- Step 7: abstracts over Future and turns Future to a generic effect: F[_]: Monad.
-F is reified with three concrete types: cats.Id, scala.concurrent.Future and monix.eval.Task.
+- Step 5: Uses *Kleisli* wrapping an *Either*
+- Step 6: Uses *Kleisli* wrapping an *EitherT* which wraps a *Future* wrapping an *Either*
+- Step 7: abstracts over Future and turns Future to a generic effect: *F[_]: Monad*.
+F is reified with three concrete types: *cats.Id*, *scala.concurrent.Future* and *monix.eval.Task*.
