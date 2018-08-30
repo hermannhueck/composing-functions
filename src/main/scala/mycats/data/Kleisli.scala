@@ -1,4 +1,6 @@
-package mycats
+package mycats.data
+
+import mycats.{Functor, Monad}
 
 import scala.language.higherKinds
 
@@ -44,13 +46,12 @@ object Kleisli { self =>
     Kleisli { a => F.pure(a) }
 
 
-  object ops {
+  implicit def kleisliMonad[F[_]: Monad, A]: Monad[Kleisli[F, A, ?]] = new Monad[Kleisli[F, A, ?]] {
 
-    implicit def kleisliMonad[F[_] : Monad, A]: Monad[Kleisli[F, A, ?]] = new Monad[Kleisli[F, A, ?]] {
+    override def pure[B](b: B): Kleisli[F, A, B] =
+      self.pure(b)
 
-      override def pure[B](b: B): Kleisli[F, A, B] = self.pure(b)
-
-      override def flatMap[B, C](kl: Kleisli[F, A, B])(f: B => Kleisli[F, A, C]): Kleisli[F, A, C] = kl flatMap f
-    }
+    override def flatMap[B, C](kl: Kleisli[F, A, B])(f: B => Kleisli[F, A, C]): Kleisli[F, A, C] =
+      kl flatMap f
   }
 }

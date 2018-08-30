@@ -14,7 +14,7 @@ trait Monad[F[_]] extends Functor[F] {
 
 object Monad {
 
-  object ops {
+  object syntax {
 
     implicit class MonadSyntax[F[_]: Monad, A](fa: F[A]) {
       def flatMap[B](f: A => F[B]): F[B] = Monad[F].flatMap(fa)(f)

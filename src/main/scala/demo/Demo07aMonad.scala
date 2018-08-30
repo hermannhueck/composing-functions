@@ -1,10 +1,9 @@
 package demo
 
-import mycats.{Functor, Monad}
-import Functor.ops._
-import Monad.ops._
+import mycats.Functor.syntax._
+import mycats.Monad.syntax._
 
-object Demo07Monad extends App { self =>
+object Demo07aMonad extends App {
 
   def getInput: String = {
 
@@ -16,8 +15,8 @@ object Demo07Monad extends App { self =>
     getUrl(url).flatMap(getLines).map(_.mkString("\n")).toOption.get
   }
 
-  println("\n===== FlatMapping Functions")
 
+  println("\n===== FlatMapping Functions")
   println("----- Monad[Function1]#flatMap (via implicit conversion)")
 
   val countLines: String => Int = text => text.split("\n").length
@@ -47,43 +46,6 @@ object Demo07Monad extends App { self =>
   val stat2: (Int, Int, Int) = computeStatistics2(getInput) // execute the program (impure as it reads the URL)
   println(s"lines: ${stat2._1}, words: ${stat2._2}, chars: ${stat2._3}") // print the result (impure, as it writes to the console)
   // prints something like: lines: 39, words: 288, chars: 1747
-
-
-  println("----- Monad[Function1] is the Reader Monad")
-  println("----- The following example is a little bit more realistic. It is stolen from \"Scala with Cats\".")
-
-  val users: Map[Int, String] = Map(
-    1 -> "dade",
-    2 -> "kate",
-    3 -> "margo"
-  )
-  val passwords: Map[String, String] = Map(
-    "dade" -> "zerocool",
-    "kate" -> "acidburn",
-    "margo" -> "secret"
-  )
-
-  case class Db(usernames: Map[Int, String], passwords: Map[String, String])
-  val db = Db(users, passwords)
-
-  type DbReader[A] = Db => A    // ^= Function1[Db, A] ^= DB => A
-
-  def findUsername(userId: Int): DbReader[Option[String]] =
-    db => db.usernames.get(userId)
-
-  def checkPassword(username: String, password: String): DbReader[Boolean] =
-    db => db.passwords.get(username).contains(password)
-
-  def checkLogin(userId: Int, password: String): DbReader[Boolean] =
-    for {
-      optUsername <- findUsername(userId)
-      passwordOk <- optUsername
-        .map(name => checkPassword(name, password))
-        .getOrElse((_:Db) => false)
-    } yield passwordOk
-
-  println(checkLogin(1, "zerocool")(db))
-  println(checkLogin(4, "davinci")(db))
 
   println("-----\n")
 }

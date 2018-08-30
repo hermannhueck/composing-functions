@@ -1,7 +1,7 @@
 package demo
 
 import mycats.Functor
-import Functor.ops._
+import Functor.syntax._
 
 /*
   code compiles only with -Ypartial-unification enabled

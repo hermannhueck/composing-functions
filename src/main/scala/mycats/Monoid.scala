@@ -11,7 +11,7 @@ trait Monoid[A] {
 
 object Monoid {
 
-  object ops {
+  object syntax {
 
     implicit class MonoidSyntax[A: Monoid](x: A) {
 
@@ -43,15 +43,5 @@ object Monoid {
   implicit def function1Monoid[A: Monoid]: Monoid[A => A] = new Monoid[A => A] {
     override def empty: A => A = _ => Monoid[A].empty
     override def combine(f: A => A, g: A => A): A => A = a => Monoid[A].combine(f(a), g(a))
-  }
-
-  implicit def function1ComposeMonoid[A]: Monoid[A => A] = new Monoid[A => A] {
-    override def empty: A => A = identity
-    override def combine(f: A => A, g: A => A): A => A = f compose g
-  }
-
-  implicit def function1AndThenMonoid[A]: Monoid[A => A] = new Monoid[A => A] {
-    override def empty: A => A = identity
-    override def combine(f: A => A, g: A => A): A => A = f andThen g
   }
 }

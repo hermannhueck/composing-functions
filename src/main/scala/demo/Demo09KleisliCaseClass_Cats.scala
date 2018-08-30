@@ -1,8 +1,9 @@
 package demo
 
-import mycats.data.Kleisli
+import cats.data.Kleisli
+import cats.instances.option._
 
-object Demo09KleisliCaseClass extends App {
+object Demo09KleisliCaseClass_Cats extends App {
 
   println("\n===== case class Kleisli")
 
