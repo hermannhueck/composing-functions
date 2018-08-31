@@ -2,6 +2,12 @@ package demo
 
 import mycats.Functor
 
+/*
+  code compiles only with kind-projector compiler plugin
+
+  See:
+  https://github.com/non/kind-projector
+ */
 object Demo01aKindProjector {
 
   // Code compiles without kind-projector.

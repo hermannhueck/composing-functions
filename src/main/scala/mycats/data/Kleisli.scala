@@ -1,6 +1,6 @@
 package mycats.data
 
-import mycats.{Functor, Monad}
+import mycats.{Functor, Monad, ~>}
 
 import scala.language.higherKinds
 
@@ -30,8 +30,12 @@ case class Kleisli[F[_], A, B](run: A => F[B]) {
     F.map(run(a))(f)
   }
 
-  def mapF[G[_], C](f: F[B] => G[C]): Kleisli[G, A, C] = Kleisli { a =>
-    f(run(a))
+  def mapF[G[_], C](f: F[B] => G[C]): Kleisli[G, A, C] = Kleisli {
+    run andThen f       // same as: a => f(run(a))
+  }
+
+  def mapK[G[_]](nt: F ~> G): Kleisli[G, A, B] = Kleisli {
+    run andThen nt.apply // same as: a => f(run(a))
   }
 
   def apply(a: A): F[B] = run(a)
