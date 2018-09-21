@@ -15,7 +15,7 @@ Treating "Functions as Data" means that we can ...
 In this talk I demonstrate different ways of function composition
 (and manipulation - what is often the same).
 
-I only deal with *scala.Function1*, because due to currying we can regard
+I only deal with *scala.Function1*, because due to tupling and currying we can regard
 any function (except *Function0*) as a *Function1*. Curried functions are easier to compose.
 
 I start with the methods on Function1: *compose* and *andThen*.

@@ -1,6 +1,6 @@
 package demo
 
-object Demo03CurriedFunctions extends App {
+object Demo03bCurriedFunctions extends App {
 
   println("\n----- Currying and Uncurrying")
 
