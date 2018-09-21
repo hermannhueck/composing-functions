@@ -12,8 +12,7 @@ Treating "Functions as Data" means that we can ...
 - organize functions in data structures like List, Option etc.
 - wrap a function in a case class
 
-In this talk I demonstrate different ways of function composition
-(and manipulation - what is often the same).
+In this talk I demonstrate different ways of function composition.
 
 I only deal with *scala.Function1*, because due to tupling and currying we can regard
 any function (except *Function0*) as a *Function1*. Curried functions are easier to compose.
@@ -23,17 +22,12 @@ Then I show how to fold a List of functions.
 
 Then I turn to function composition with Monoids.
 
-Functions are Functors (if *Functor* for *Function1* is defined), i.e they can be mapped over.
+Functions are Functors, i.e they can be mapped over.<br/>
+Functions are Monads, i.e they can be flatMapped over.<br/>
+With *map* and *flatMap* we can write for-comprehensions over functions.<br/>
+Being Monads, we can use functions in any monadic context.
 
-Functions are Monads (if *Monad* for *Function1* is defined), i.e they can be flatMapped over.
-
-With *map* and *flatMap* we can write for-comprehensions over functions.
-As Monads, we can use them in any monadic context.
-
-Next I implement my own *mycats.Kleisli* similar to *cats.data.Kleisli*
-and show its usage with *flatMap*, *flatMapF*, *andThen* and *compose*.
-
-Finally I show the *Reader* Monad, a *Kleisli* simplified with *Id*.
+The most powerful way of function composition is Kleisli and the Reader Monad.
 
 --
 
