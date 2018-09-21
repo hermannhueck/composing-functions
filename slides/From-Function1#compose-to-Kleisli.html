@@ -177,7 +177,7 @@ Treating "Functions as Data" means that we can ...
 In this talk I demonstrate different ways of function composition
 (and manipulation - what is often the same).
 
-I only deal with *scala.Function1*, because due to currying we can regard
+I only deal with *scala.Function1*, because due to tupling and currying we can regard
 any function (except *Function0*) as a *Function1*. Curried functions are easier to compose.
 
 ---
@@ -210,7 +210,7 @@ Finally I show the *Reader* Monad, a *Kleisli* simplified with *Id*.
   - Kind Projector
   - Partial Unification
 1. Functions as Data
-1. Curried Functions
+1. Tupling and Currying Functions
 1. *Function1#compose* and *Function1#andThen*
 1. Monoidal Function Composition
 1. *Function1* as Functor
@@ -572,7 +572,7 @@ case class MyWrapper[A, B](run: A => B) {
 
 class: middle, center
 
-# 3. Curried functions
+# 3. Tupling and Currying Functions
 <br/>
 <br/>
 <br/>
@@ -580,8 +580,46 @@ class: middle, center
 <br/>
 
 .footnote[
-&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo03CurriedFunctions*
+&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo03aTupledFunctions*<br/>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; *demo.Demo03bCurriedFunctions*
 ]
+
+---
+
+## Every function is a *Function1* ...
+
+--
+
+```scala
+val sum3Ints : (Int, Int, Int) => Int        = _ + _ + _
+val sum3Ints2: Function3[Int, Int, Int, Int] = _ + _ + _
+val res0 = sum3Ints(1,2,3) // 6
+```
+
+--
+
+... if you tuple up it's parameters.
+
+--
+
+```scala
+val sumTupled: ((Int, Int, Int)) => Int = sum3Ints.tupled
+// sumTupled: ((Int, Int, Int)) => Int = scala.Function3$$Lambda$1018/1492801385@4f8c268b
+val sumTupled2: Function1[(Int, Int, Int), Int] = sum3Ints.tupled
+// sumTupled2: ((Int, Int, Int)) => Int = scala.Function3$$Lambda$1018/1492801385@5fff4c64
+val resTupled = sumTupled((1,2,3)) // 6
+val resTupled2 = sumTupled2((1,2,3)) // 6
+```
+
+--
+
+If untupled again, we get the original function back.
+
+```scala
+val sumUnTupled: (Int, Int, Int) => Int = Function.untupled(sumTupled)
+// sumUnTupled: (Int, Int, Int) => Int = scala.Function$$$Lambda$3583/1573807728@781c2988
+val resUnTupled = sumUnTupled(1,2,3) // 6
+```
 
 ---
 
@@ -679,7 +717,7 @@ val appliedAllAtOnce: Int = sumCurried(1)(2)(3)
 --
 
 1. Curried functions can be partially applied.<br/>
-They are better <u>composable</u> than their uncurried counterparts.
+They are <u>easier to compose</u> than their uncurried counterparts.
 
 --
 
@@ -710,7 +748,7 @@ res5: List[Int] = List(0,1)
 
 class: middle, center
 
-# 4. *Function1#compose* and Function1#apply
+# 4. *Function1#compose* and Function1#andThen
 <br/>
 <br/>
 <br/>
@@ -913,7 +951,7 @@ Monoid[Int => Int].combineAll(List(f, g, h))(4)  // 117
 --
 
 <br/>
-Another Monoid instance yields a different result.
+Other Monoid instances for *Function1* yield different results.
 
 ---
 
@@ -997,7 +1035,7 @@ class: middle, center
 <br/>
 
 A Functor is any Context F[\_] that provides a function *map* ...<br/>
-and abides by the Functor laws (which are not presented here).
+and abides by the Functor laws (not presented here).
 <br/>
 <br/>
 
@@ -1135,7 +1173,7 @@ class: middle, center
 <br/>
 
 A Monad is any Context F[\_] that provides the functions *pure* and *flatMap* ...<br/>
-and abides by the Monad laws (which are not presented here).
+and abides by the Monad laws (not presented here).
 <br/>
 <br/>
 
@@ -1225,7 +1263,7 @@ val h = f flatMap g
 instead of:
 
 ```scala
-val h = Functor[Function1[Int, ?]].flatMap(f)(g)
+val h = Monad[Function1[Int, ?]].flatMap(f)(g)
 ```
 
 ---
@@ -1296,8 +1334,8 @@ def checkLogin(userId: Int, password: String): DbReader[Boolean] = // ^= Functio
       .getOrElse((_:Db) => false)
   } yield passwordOk
 
-val login1Ok = checkLogin(1, "zerocool")(db) // true
-val login4Ok = checkLogin(4, "davinci")(db) // false
+val loginOk1 = checkLogin(1, "zerocool")(db) // true
+val loginOk2 = checkLogin(4, "davinci")(db)  // false
 ```
 
 Example taken from "Scala with Cats" (see chapter Resources for link)
@@ -1840,7 +1878,7 @@ def checkLogin(userId: Int, password: String): DbReader[Boolean] =
   } yield passwordOk
 
 val loginOk1 = checkLogin(1, "zerocool").run(db) // true
-val loginOk2 = checkLogin(4, "davinci").run(db) // false
+val loginOk2 = checkLogin(4, "davinci").run(db)  // false
 ```
 
 Example taken from "Scala with Cats" (see chapter Resources for link)
@@ -1909,7 +1947,7 @@ class: middle, center
 <br/>
 <br/>
 
-https://github.com/hermannhueck/use-applicative-where-applicable
+https://github.com/hermannhueck/composing-functions
 
 
 </textarea>
