@@ -886,36 +886,30 @@ trait Monoid[A] {
 }
 ```
 
---
-
-<br/>
-When composing functions with Monoid the functions must have the same input and output type.
-You cannot compose functions of type *A => B*, only functions of type *A => A*.
-
 ---
 
 ## Default Monoid Instance for *Function1*
 <br/>
 
 ```scala
-// This one is the default Function1-Monoid in Cats
-// It requires A to be a Monoid too.
+// This one is the default Function1-Monoid in Cats.
+// It requires the result type B to be a Monoid too.
 //
-implicit def function1Monoid[A: Monoid]: Monoid[A => A] = new Monoid[A => A] {
+implicit def function1Monoid[A, B: Monoid]: Monoid[A => B] = new Monoid[A => B] {
   
-  override def empty: A => A =
-    _ => Monoid[A].empty
-  override def combine(f: A => A, g: A => A): A => A =
-    a => Monoid[A].combine(f(a), g(a))
+  override def empty: A => B =
+    _ => Monoid[B].empty
+  override def combine(f: A => B, g: A => B): A => B =
+    a => Monoid[B].combine(f(a), g(a))
 }
 ```
 <br/>
 
 --
 
-- This instance defines a Monoid for Functions of type *A => A*.
-- It requires type *A* to be a Monoid too.
-- *empty* defines a function which ignores it's input and returns *Monoid[A].empty*.
+- This instance defines a Monoid for Functions of type *A => B*.
+- It requires type *B* to be a Monoid too.
+- *empty* defines a function which ignores it's input and returns *Monoid[B].empty*.
 - *combine* takes two functions *f* and *g*, invokes *f(a)* and *g(a)* on it's input and returns the combined result.
 
 ---
@@ -963,6 +957,7 @@ implicit def function1ComposeMonoid[A]: Monoid[A => A] = new Monoid[A => A] {
 --
 
 - This instance composes the Functions with *Function1#compose*.
+- It works only for functions of type *A => A*. (Input and output type are the same type.)
 
 --
 
@@ -993,6 +988,7 @@ implicit def function1AndThenMonoid[A]: Monoid[A => A] = new Monoid[A => A] {
 --
 
 - This instance composes the Functions with *Function1#andThen*.
+- It works only for functions of type *A => A*. (Input and output type are the same type.)
 
 --
 

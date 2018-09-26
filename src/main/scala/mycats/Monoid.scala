@@ -40,8 +40,8 @@ object Monoid {
   }
 
   // This one is the default Function1-Monoid in Cats
-  implicit def function1Monoid[A: Monoid]: Monoid[A => A] = new Monoid[A => A] {
-    override def empty: A => A = _ => Monoid[A].empty
-    override def combine(f: A => A, g: A => A): A => A = a => Monoid[A].combine(f(a), g(a))
+  implicit def function1Monoid[A, B: Monoid]: Monoid[A => B] = new Monoid[A => B] {
+    override def empty: A => B = _ => Monoid[B].empty
+    override def combine(f: A => B, g: A => B): A => B = a => Monoid[B].combine(f(a), g(a))
   }
 }
