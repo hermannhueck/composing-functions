@@ -25,17 +25,24 @@ object Demo04ComposingFunctions extends App {
 
 
   println("----- Folding a List[Function1[Int, Int]]")
-  println("----- Folding functions is not commutative! foldRight and foldLeft give different results.")
 
   val lf: List[Int => Int] = List(_*2, _+10, _+100)
 
-  val lfFoldedRight = lf.foldRight(identity[Int] _) {(f, acc) => f compose acc}
-  val resLfFoldedRight = lfFoldedRight(1)
-  println(resLfFoldedRight) // 222
+  val fComposed3 = lf.foldRight(identity[Int] _) { (f, acc) => f compose acc }
+  val res3 = fComposed3(1)
+  println(res3) // 222
 
-  val lfFoldedLeft = lf.foldLeft(identity[Int] _) {(acc, f) => acc andThen f}
-  val resLfFoldedLeft = lfFoldedLeft(1)
-  println(resLfFoldedLeft) // 112
+  val fComposed4 = lf.foldLeft(identity[Int] _) { (acc, f) => acc compose f }
+  val res4 = fComposed4(1)
+  println(res4) // 222
+
+  val fComposed5 = lf.foldRight(identity[Int] _) { (f, acc) => f andThen acc }
+  val res5 = fComposed5(1)
+  println(res5) // 112
+
+  val fComposed6 = lf.foldLeft(identity[Int] _) { (acc, f) => acc andThen f }
+  val res6 = fComposed6(1)
+  println(res6) // 112
 
   println("-----")
 }

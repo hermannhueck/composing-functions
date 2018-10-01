@@ -193,14 +193,15 @@ Functions are Monads, i.e they can be flatMapped over.<br/>
 With *map* and *flatMap* we can write for-comprehensions over functions.<br/>
 Being Monads, we can use functions in any monadic context.
 
-The most powerful way of function composition is Kleisli and the Reader Monad.
+The most powerful way of function composition is Kleisli
+(also known as ReaderT) and the Reader Monad.
 
 ---
 
 # Agenda
 <br/>
 
-1. Preliminaries
+1. Compiler Settings
   - Kind Projector
   - Partial Unification
 1. Functions as Data
@@ -209,7 +210,7 @@ The most powerful way of function composition is Kleisli and the Reader Monad.
 1. Monoidal Function Composition
 1. *Function1* as Functor
 1. *Function1* as Monad
-1. Kleisli Composition done manually
+1. Kleisli Composition - done manually
 1. *case class Kleisli*
 1. Reader Monad
 1. Resources
@@ -218,7 +219,7 @@ The most powerful way of function composition is Kleisli and the Reader Monad.
 
 class: middle, center
 
-# 1. Preliminaries
+# 1. Compiler Settings
 <br/>
 <br/>
 <br/>
@@ -229,6 +230,22 @@ class: middle, center
 ### 1.1 Kind Projector
 ### 1.2 Partial Unification
 ]
+
+---
+
+<br/>
+<br/>
+<br/>
+### To compile the subsequent code examples, kind-projector and partial-unification must be enabled in *build.sbt*:
+<br/>
+<br/>
+<br/>
+
+```scala
+scalacOptions += "-Ypartial-unification"
+
+addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.7")
+```
 
 ---
 
@@ -511,7 +528,7 @@ val mapped = List("1", "2", "3").map(str2Int)
 
 --
 
-- return a function from other functions
+- return a function from other functions (HOFs)
 
 ```scala
 val plus100: Int => Int = { i =>
@@ -779,10 +796,10 @@ f: Int => Int = $$Lambda$4204/320646851@733dc5b7
 scala> val g: Int => Int = _ * 2
 g: Int => Int = $$Lambda$4205/1093482910@3a179009
 
-scala> (f compose g apply 1) == f(g(1))
+scala> (f compose g)(1) == f(g(1))
 res6: Boolean = true
 
-scala> (f andThen g apply 1) == g(f(1))
+scala> (f andThen g)(1) == g(f(1))
 res7: Boolean = true
 ```
 
@@ -831,28 +848,15 @@ val lf: List[Int => Int] = List(_*2, _+10, _+100)
 --
 
 ```scala
-val lfFoldedRight = lf.foldRight(identity[Int] _) {(f, acc) => acc andThen f}
-val resLfFoldedRight = lfFoldedRight(1)
-// 222
-```
-
---
-
-```scala
-val lfFoldedLeft = lf.foldLeft(identity[Int] _) {(acc, f) => acc andThen f}
-val resLfFoldedLeft = lfFoldedLeft(1)
-// 112
+val fn = lf.foldLeft(identity[Int] _) { (acc, f) => acc andThen f }
+val res = fn(1) // 112
 ```
 
 --
 
 <br/>
+<br/>
 The *identity* function is the no-op of function composition.
-
---
-
-Folding functions is not a commutative operation!<br/>
-Hence *foldRight* and *foldLeft* return different results.
 
 ---
 
@@ -1334,7 +1338,7 @@ Example taken from "Scala with Cats" (see chapter Resources for link)
 
 class: middle, center
 
-# 8. Kleisli composition done manually
+# 8. Kleisli composition - done manually
 <br/>
 <br/>
 <br/>
@@ -1419,7 +1423,8 @@ val res2: Option[String] = flatMappedOnOpt2("3") // Some(2.0)
 
 <u>But:</u> We still have to bind the variables *i1, i2, d* and *s* to names.<br/>
 &nbsp; &nbsp; &nbsp; &nbsp; We would like to build a function pipeline with some kind of *andThenF*.
-<br/><br/>
+<br/>
+<u>Wanted:</u> something like ... <br/>
 &nbsp; &nbsp; &nbsp; &nbsp; *s2iOpt andThenF plus2Opt andThenF div10ByOpt andThenF d2sOpt*
 
 ---
@@ -1517,7 +1522,7 @@ class: middle, center
 ## *case class Kleisli*
 <br/>
 
-That was my artefact. Cats does not provide a *kleisli* method on *Function1*.
+The previous *kleisli* impl was my personal artefact. Cats does not provide a *kleisli* method on *Function1*.
 Cats instead provides a *case class Kleisli* with the functionality shown above and more.
 
 --
@@ -1565,23 +1570,21 @@ and return the resulting *run* function rewrapped in a *Kleisli* instance.
 <br/>
 
 ```scala
-object Kleisli { self =>
+object Kleisli {
 
-  def pure[F[_], A, B](b: B)(implicit F: Monad[F]): Kleisli[F, A, B] =
-    Kleisli { _ => F.pure(b) }
+  // Kleisli Monad instance defined in companion object is in
+  // 'implicit scope' (i.e. found by the compiler without import).
 
-  object ops {
+  implicit def kleisliMonad[F[_], A](implicit M: Monad[F]): Monad[Kleisli[F, A, ?]] =
 
-    implicit def kleisliMonad[F[_] : Monad, A]: Monad[Kleisli[F, A, ?]] =
+    new Monad[Kleisli[F, A, ?]] {
 
-      new Monad[Kleisli[F, A, ?]] {
+      override def pure[B](b: B): Kleisli[F, A, B] =
+          Kleisli { _ => M.pure(b) }
 
-        override def pure[B](b: B): Kleisli[F, A, B] = self.pure(b)
-
-        override def flatMap[B, C](kl: Kleisli[F, A, B])(f: B => Kleisli[F, A, C])
-            : Kleisli[F, A, C] = kl flatMap f
-      }
-  }
+      override def flatMap[B, C](kl: Kleisli[F, A, B])(f: B => Kleisli[F, A, C])
+          : Kleisli[F, A, C] = kl flatMap f
+    }
 }
 ```
 
@@ -1628,7 +1631,7 @@ kleisli2("3") foreach println
 ## *Kleisli#flatMapF*
 <br/>
 
-As we saw *Kleisli#flatMap* is not very convenient.
+As we saw *Kleisli#flatMap* is not very convenient (even when using a for-comprehension).
 We have to bind values to variables and thread them through the for-comprehension.
 *flatMapF* is easier to use.
 
@@ -1658,7 +1661,8 @@ kleisli4.run("3") foreach println
 ## *Kleisli#andThen*
 <br/>
 
-The behaviour of *flatMap* is exactly what we expect from *andThen*.
+The behaviour of *flatMapF* is exactly what we expect from *andThen*<br/>
+(according to *Function1#andThen*).
 
 --
 
@@ -1675,8 +1679,10 @@ The first version of *andThen* is an alias for *flatMapF*.
 
 <br/>
 ```scala
-(Kleisli(s2iOpt) andThen plus2Opt andThen
-    div10ByOpt andThen d2sOpt) foreach println
+val kleisli5: Kleisli[Option, String, String] =
+  Kleisli(s2iOpt) andThen plus2Opt andThen div10ByOpt andThen d2sOpt
+
+kleisli5.run("3") foreach println
 ```
 
 ---
@@ -1692,15 +1698,18 @@ def andThen[C](that: Kleisli[F, B, C])(implicit M: Monad[F]): Kleisli[F, A, C] =
 ```
 
 This overloaded version of *andThen* doesn't take a function *f: B => F[C]*.
-Instead it takes a *Kleisli[F, B, C]* wrapping such a function.
+Instead it takes another *Kleisli[F, B, C]* wrapping such a function.
 This version allows us to concatenate several Kleislis to a pipeline.
 
 --
 
 <br/>
 ```scala
-(Kleisli(s2iOpt) andThen Kleisli(plus2Opt) andThen
-    Kleisli(div10ByOpt) andThen Kleisli(d2sOpt)) foreach println
+val kleisli6: Kleisli[Option, String, String] =
+  Kleisli(s2iOpt) andThen Kleisli(plus2Opt) andThen
+                Kleisli(div10ByOpt) andThen Kleisli(d2sOpt)
+
+kleisli6.run("3")
 ```
 
 ---
@@ -1727,10 +1736,10 @@ def compose[Z](that: Kleisli[F, Z, A])(implicit M: Monad[F]): Kleisli[F, Z, B] =
 <br/>
 ```scala
 (Kleisli(d2sOpt) compose div10ByOpt compose
-    plus2Opt compose s2iOpt) foreach println
+    plus2Opt compose s2iOpt).run("3") foreach println
 
 (Kleisli(d2sOpt) compose Kleisli(div10ByOpt) compose
-    Kleisli(plus2Opt) compose Kleisli(s2iOpt)) foreach println
+    Kleisli(plus2Opt) compose Kleisli(s2iOpt)).run("3") foreach println
 ```
 
 ---

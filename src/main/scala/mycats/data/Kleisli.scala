@@ -41,19 +41,22 @@ case class Kleisli[F[_], A, B](run: A => F[B]) {
   def apply(a: A): F[B] = run(a)
 }
 
-object Kleisli { self =>
+object Kleisli {
 
-  def pure[F[_], A, B](b: B)(implicit F: Monad[F]): Kleisli[F, A, B] =
-    Kleisli { _ => F.pure(b) }
+  def pure[F[_], A, B](b: B)(implicit M: Monad[F]): Kleisli[F, A, B] =
+    Kleisli { _ => M.pure(b) }
 
-  def ask[F[_], A](implicit F: Monad[F]): Kleisli[F, A, A] =
-    Kleisli { a => F.pure(a) }
+  def ask[F[_], A](implicit M: Monad[F]): Kleisli[F, A, A] =
+    Kleisli { a => M.pure(a) }
 
 
-  implicit def kleisliMonad[F[_]: Monad, A]: Monad[Kleisli[F, A, ?]] = new Monad[Kleisli[F, A, ?]] {
+  // Kleisli Monad instance defined in companion object is in
+  // 'implicit scope' (i.e. found by the compiler without import).
+
+  implicit def kleisliMonad[F[_], A](implicit M: Monad[F]): Monad[Kleisli[F, A, ?]] = new Monad[Kleisli[F, A, ?]] {
 
     override def pure[B](b: B): Kleisli[F, A, B] =
-      self.pure(b)
+      Kleisli { _ => M.pure(b) }
 
     override def flatMap[B, C](kl: Kleisli[F, A, B])(f: B => Kleisli[F, A, C]): Kleisli[F, A, C] =
       kl flatMap f

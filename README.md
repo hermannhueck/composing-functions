@@ -27,7 +27,8 @@ Functions are Monads, i.e they can be flatMapped over.<br/>
 With *map* and *flatMap* we can write for-comprehensions over functions.<br/>
 Being Monads, we can use functions in any monadic context.
 
-The most powerful way of function composition is Kleisli and the Reader Monad.
+The most powerful way of function composition is Kleisli
+(also known as ReaderT) and the Reader Monad.
 
 --
 
