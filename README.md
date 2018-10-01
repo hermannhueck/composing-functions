@@ -4,36 +4,38 @@
 
 Fine-grained composability of functions is one of the core advantages of FP.
 
-Treating "Functions as Data" means that we can ...
-- store a function in a val
-- pass it as args to other (higher order) functions (HOFs)
-- return a function from other functions
-- process/manipulate a function like data
-- organize functions in data structures like List, Option etc.
-- wrap a function in a case class
+Treating "Functions as Data" means that we can
+store, manipulate, pass functions around and compose them
+in much the same way we do with data.
 
-In this talk I demonstrate different ways of function composition.
+This talk demonstrates different ways of function composition in Scala.
 
-I only deal with *scala.Function1*, because due to tupling and currying we can regard
-any function (except *Function0*) as a *Function1*. Curried functions are easier to compose.
+The focus lies on *scala.Function1*, because due to tupling and
+currying we can regard any FunctionN (except *Function0*) as a *Function1*.
+Curried functions are easier to compose.
 
-I start with the methods on *scala.Function1*: *compose* and *andThen*.<br/>
-Then I show how to fold a List of functions.
+Starting with the composition methods of *scala.Function1*:
+*compose* and *andThen*, we will investigate folding a List of functions.
 
-Then I turn to function composition with Monoids.
+Defining a Monoid for *Function1* allows us to combine two or more
+functions into a new one.
 
-Functions are Functors, i.e they can be mapped over.<br/>
-Functions are Monads, i.e they can be flatMapped over.<br/>
-With *map* and *flatMap* we can write for-comprehensions over functions.<br/>
+A function can also be seen as a Functor and a Monad. That means:
+Functions can be mapped and flatMapped over. And we can write
+for-comprehensions in a *Function1* context just as we do
+with *List*, *Option*, *Future*, *Either* etc.
+
 Being Monads, we can use functions in any monadic context.
+We will see that *Function1* **is** the Reader Monad.
 
-The most powerful way of function composition is Kleisli
-(also known as ReaderT) and the Reader Monad.
+The most powerful way of function composition is *Kleisli*
+(also known as *ReaderT*). We will see that *Kleisli*
+(defined with the *Id* context) **is** the Reader Monad again.
 
 --
 
-All this can be found in package *demo*.
-Most of the demo programs are provided in two versions,
+All this is demonstrated in small sample programs in package *demo*.
+Most of the demos are provided in two versions,
 one using the Cats library, the other one using
 my own implementations of categories provided in package *mycats*.
 
