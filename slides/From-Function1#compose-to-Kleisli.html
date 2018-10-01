@@ -163,6 +163,7 @@ https://github.com/hermannhueck/composing-functions
 ---
 
 # Abstract (1/2)
+<br/>
 
 Fine-grained composability of functions is one of the core advantages of FP.
 
@@ -182,6 +183,7 @@ Starting with the composition methods of *scala.Function1*:
 ---
 
 # Abstract (2/2)
+<br/>
 
 Defining a Monoid for *Function1* allows us to combine two or more
 functions into a new one.
@@ -197,23 +199,6 @@ We will see that *Function1* **is** the Reader Monad.
 The most powerful way of function composition is *Kleisli*
 (also known as *ReaderT*). We will see that *Kleisli*
 (defined with the *Id* context) **is** the Reader Monad again.
-
----
-
-# Abstract (2/2)
-
-I start with the methods on *scala.Function1*: *compose* and *andThen*.<br/>
-Then I show how to fold a List of functions.
-
-Then I turn to function composition with Monoids.
-
-Functions are Functors, i.e they can be mapped over.<br/>
-Functions are Monads, i.e they can be flatMapped over.<br/>
-With *map* and *flatMap* we can write for-comprehensions over functions.<br/>
-Being Monads, we can use functions in any monadic context.
-
-The most powerful way of function composition is Kleisli
-(also known as ReaderT) and the Reader Monad.
 
 ---
 
