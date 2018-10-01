@@ -2,6 +2,8 @@
 
 ## Different Ways of Function Composition
 
+This repo contains code an slides for my talk on this subject.
+
 Fine-grained composability of functions is one of the core advantages of FP.
 
 Treating "Functions as Data" means that we can
