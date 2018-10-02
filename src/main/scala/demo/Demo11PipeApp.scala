@@ -1,4 +1,4 @@
-package playground
+package demo
 
 object Pipe {
 
@@ -8,18 +8,18 @@ object Pipe {
   }
 }
 
-object PipeApp extends App {
+object Demo11PipeApp extends App {
 
-  println("\n===== Piping like F#")
+  println("\n===== Piping as in F#")
 
   import Pipe._
   
 
   val squared: Int => Int = x => x * x
 
-  val res0 = 5 |> squared
-
-  println(res0)
+  println(5.pipe(squared)) // 25
+  println(5 pipe squared) // 25
+  println(5 |> squared) // 25
 
 
   println("-----")
@@ -51,7 +51,7 @@ object PipeApp extends App {
   val res3 = (s2i andThen plus2 andThen div10By andThen d2s)("3") // 2.0 !!!
   println(res3)
 
-  // Using Function1#andThen
+  // Using Function1#compose
   val res4 = (d2s compose div10By compose plus2 compose s2i)("3") // 2.0 !!!
   println(res4)
 
