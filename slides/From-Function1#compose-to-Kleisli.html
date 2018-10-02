@@ -845,22 +845,36 @@ val res2 = fComposed2("3") // 2.0 !!!
 --
 
 ```scala
-val lf: List[Int => Int] = List(_*2, _+10, _+100)
+val fs: Seq[Int => Int] = Seq(_*2, _+10, _+100)
 ```
+
+--
+
+```scala
+val fn = fs.foldLeft(identity[Int] _) { (acc, f) => acc andThen f }
+println(fn(1)) // 112
+```
+<br/>
+
+--
+
+The *identity* function is the no-op of function composition.
+<br/>
+
+--
+
+<br/>
+This functionality is already provided in the Scala standard library in:
+*Function\.chain\[a\](fs: Seq[a => a]): a => a*
+<br/>
 <br/>
 
 --
 
 ```scala
-val fn = lf.foldLeft(identity[Int] _) { (acc, f) => acc andThen f }
-val res = fn(1) // 112
+val fChained = Function.chain(fs)
+println(fChained(1)) // 112
 ```
-
---
-
-<br/>
-<br/>
-The *identity* function is the no-op of function composition.
 
 ---
 

@@ -26,23 +26,32 @@ object Demo04ComposingFunctions extends App {
 
   println("----- Folding a List[Function1[Int, Int]]")
 
-  val lf: List[Int => Int] = List(_*2, _+10, _+100)
+  val fs: Seq[Int => Int] = Seq(_*2, _+10, _+100)
 
-  val fComposed3 = lf.foldRight(identity[Int] _) { (f, acc) => f compose acc }
+  val fComposed3 = fs.foldRight(identity[Int] _) { (f, acc) => f compose acc }
   val res3 = fComposed3(1)
   println(res3) // 222
 
-  val fComposed4 = lf.foldLeft(identity[Int] _) { (acc, f) => acc compose f }
+  val fComposed4 = fs.foldLeft(identity[Int] _) { (acc, f) => acc compose f }
   val res4 = fComposed4(1)
   println(res4) // 222
 
-  val fComposed5 = lf.foldRight(identity[Int] _) { (f, acc) => f andThen acc }
+  val fComposed5 = fs.foldRight(identity[Int] _) { (f, acc) => f andThen acc }
   val res5 = fComposed5(1)
   println(res5) // 112
 
-  val fComposed6 = lf.foldLeft(identity[Int] _) { (acc, f) => acc andThen f }
+  val fComposed6 = fs.foldLeft(identity[Int] _) { (acc, f) => acc andThen f }
   val res6 = fComposed6(1)
   println(res6) // 112
+
+
+  println("----- Chaining functions with Function.chain[a](fs: Seq[a => a]): a => a")
+
+  val fChained0 = Function.chain(fs)
+  println(fChained0(1)) // 112
+
+  val fChained1 = Function.chain(Seq[Int => Int](_*2, _+10, _+100))
+  println(fChained1(1)) // 112
 
   println("-----")
 }
