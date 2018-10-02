@@ -1,6 +1,6 @@
 # From Function1#compose to Kleisli
 
-## Different Ways of Function Composition
+## Different Ways of Function Composition in Scala
 
 This repo contains code an slides for my talk on this subject.
 
