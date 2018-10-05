@@ -3,7 +3,7 @@ package demo
 import cats.data.Kleisli
 import cats.instances.option._
 
-object Demo09KleisliCaseClass_Cats extends App {
+object Demo10KleisliCaseClass_Cats extends App {
 
   println("\n===== case class Kleisli")
 

@@ -5,7 +5,7 @@ import cats.instances.option._
 
 import scala.language.higherKinds
 
-object Demo08KleisliDoneManually_Cats extends App {
+object Demo09KleisliDoneManually_Cats extends App {
 
   println("\n===== Kleisli composition done manually")
 

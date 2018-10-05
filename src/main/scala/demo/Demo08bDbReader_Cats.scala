@@ -1,11 +1,13 @@
 package demo
 
 import cats.Monad
-import cats.data.Reader
+import cats.instances.function._
+import cats.syntax.functor._
+import cats.syntax.flatMap._
 
-object Demo10bDbReader_Cats extends App {
+object Demo08bDbReader_Cats extends App {
 
-  println("\n===== DbReader with Monad[Reader[Db, ?]]")
+  println("\n===== DbReader with Monad[Function1[Db, ?]]")
   println("----- The following example is a little bit more realistic. It is stolen from \"Scala with Cats\".")
 
   val users: Map[Int, String] = Map(
@@ -22,13 +24,13 @@ object Demo10bDbReader_Cats extends App {
   case class Db(usernames: Map[Int, String], passwords: Map[String, String])
   val db = Db(users, passwords)
 
-  type DbReader[A] = Reader[Db, A]      // ^= Kleisli[Id, Db, Boolean]
+  type DbReader[A] = Db => A    // ^= Function1[Db, A] ^= DB => A
 
   def findUsername(userId: Int): DbReader[Option[String]] =
-    Reader { db => db.usernames.get(userId) }
+    db => db.usernames.get(userId)
 
   def checkPassword(username: String, password: String): DbReader[Boolean] =
-    Reader { db => db.passwords.get(username).contains(password) }
+    db => db.passwords.get(username).contains(password)
 
   def checkLogin(userId: Int, password: String): DbReader[Boolean] =
     for {

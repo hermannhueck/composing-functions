@@ -4,7 +4,7 @@ import cats.instances.function._
 import cats.syntax.functor._
 import cats.syntax.flatMap._
 
-object Demo07aMonad_Cats extends App {
+object Demo08aMonad_Cats extends App {
 
   def getInput: String = {
 

@@ -4,7 +4,7 @@ import mycats.Monad
 import mycats.Functor.syntax._
 import mycats.Monad.syntax._
 
-object Demo07bDbReader extends App {
+object Demo08bDbReader extends App {
 
   println("\n===== DbReader with Monad[Function1[Db, ?]]")
   println("----- The following example is a little bit more realistic. It is stolen from \"Scala with Cats\".")

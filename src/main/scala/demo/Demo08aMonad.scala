@@ -3,7 +3,7 @@ package demo
 import mycats.Functor.syntax._
 import mycats.Monad.syntax._
 
-object Demo07aMonad extends App {
+object Demo08aMonad extends App {
 
   def getInput: String = {
 

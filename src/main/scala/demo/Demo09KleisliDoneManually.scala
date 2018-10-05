@@ -4,7 +4,7 @@ import mycats.Monad
 
 import scala.language.higherKinds
 
-object Demo08KleisliDoneManually extends App {
+object Demo09KleisliDoneManually extends App {
 
   println("\n===== Kleisli composition done manually")
 

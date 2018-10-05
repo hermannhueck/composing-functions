@@ -1,9 +1,9 @@
 package demo
 
-import mycats.Monad
-import mycats.data.Reader
+import cats.Monad
+import cats.data.Reader
 
-object Demo10bDbReader extends App {
+object Demo11bDbReader_Cats extends App {
 
   println("\n===== DbReader with Monad[Reader[Db, ?]]")
   println("----- The following example is a little bit more realistic. It is stolen from \"Scala with Cats\".")

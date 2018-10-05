@@ -1,9 +1,8 @@
 package demo
 
-import cats.instances.function._
-import cats.syntax.functor._
+import mycats.Functor.syntax._
 
-object Demo06Functor_Cats extends App {
+object Demo07Functor extends App {
 
   println("\n===== Mapping Functions")
 

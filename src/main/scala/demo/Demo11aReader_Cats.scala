@@ -1,9 +1,9 @@
 package demo
 
-import mycats.data.Reader
-import mycats.Monad.syntax._
+import cats.data.Reader
+import cats.syntax.flatMap._
 
-object Demo10aReader extends App {
+object Demo11aReader_Cats extends App {
 
   println("\n===== Reader Monad")
 

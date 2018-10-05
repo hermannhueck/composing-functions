@@ -1,9 +1,9 @@
 package demo
 
-import cats.Monoid
-import cats.syntax.monoid._
+import mycats.Monoid
+import Monoid.syntax._
 
-object Demo05MonoidalComposition_Cats extends App {
+object Demo06MonoidalComposition extends App {
 
   object MonoidInstances {
 
@@ -29,9 +29,6 @@ object Demo05MonoidalComposition_Cats extends App {
   println("\n===== Composition with Monoid[A => A]")
 
   println("----- compose functionality depends on the Monoid[A => A] instance visible at compile time")
-
-  import cats.instances.int._
-  import cats.instances.function._
 
   // import MonoidInstances.function1ComposeMonoid
   // import MonoidInstances.function1AndThenMonoid

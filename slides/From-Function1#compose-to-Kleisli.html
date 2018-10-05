@@ -211,13 +211,13 @@ The most powerful way of function composition is *Kleisli*
 1. Functions as Data
 1. Tupling and Currying Functions
 1. *Function1#compose* and *Function1#andThen*
+1. Piping as in F#
 1. Monoidal Function Composition
 1. *Function1* as Functor
 1. *Function1* as Monad
 1. Kleisli Composition - done manually
 1. *case class Kleisli*
 1. Reader Monad
-1. Piping as in F#
 1. Resources
 
 ---
@@ -733,7 +733,9 @@ val appliedAllAtOnce: Int = sumCurried(1)(2)(3)
 --
 
 1. Curried functions can be partially applied.<br/>
-They are <u>easier to compose</u> than their uncurried counterparts.
+They are <u>easier to compose</u> than their uncurried counterparts.<br/>
+They allow for a more fine-grained composition.
+(very useful when working with Appicatives, which is not part of this talk.)
 
 --
 
@@ -881,7 +883,7 @@ println(fChained(1)) // 112
 
 class: middle, center
 
-# 5. Monoidal Function Composition
+# 5. Piping as in F#
 <br/>
 <br/>
 <br/>
@@ -890,7 +892,110 @@ class: middle, center
 &nbsp;
 
 .footnote[
-&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo05ComposingWithMonoid*
+&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo05PipeApp*
+]
+
+---
+
+## Piping as in F#
+<br/>
+
+When you apply a function f to an argument x you write: &nbsp; ***f(x)***
+<br/>
+
+In F# it is very common to pipe the value into the function.<br/>
+Then you write: &nbsp; ***x |> f***
+<br/>
+
+--
+
+We can provide this functionality for Scala too (using an implicit conversion):
+
+--
+
+```scala
+object Pipe {
+  implicit class PipeForA[A](a: A) {
+    def pipe[B](f: A => B): B = f(a)
+    def |>[B](f: A => B): B = f(a) // F#'s |> operator
+  }
+}
+```
+
+```scala
+import Pipe._
+  
+val squared: Int => Int = x => x * x
+
+println(5.pipe(squared)) // 25
+println(5 pipe squared)  // 25
+println(5 |> squared)    // 25
+```
+
+---
+
+## Building a pipeline
+
+```scala
+import Pipe._
+  
+val s2i: String => Int = _.toInt
+val plus2: Int => Int = _ + 2
+val div10By: Int => Double = 10.0 / _
+val d2s: Double => String = _.toString + " !!!"
+
+
+// Using regular Scala function invocation
+val res1 = d2s(div10By(plus2(s2i("3")))) // 2.0 !!!
+
+
+// Using pipe
+val res2a = "3".pipe(s2i).pipe(plus2).pipe(div10By).pipe(d2s) // 2.0 !!!
+
+val res2b = "3" pipe s2i pipe plus2 pipe div10By pipe d2s // 2.0 !!!
+
+// Using F#'s pipe idiom
+val res2c = "3" |> s2i |> plus2 |> div10By |> d2s // 2.0 !!!
+
+
+// Using Function1#andThen
+val res3 = (s2i andThen plus2 andThen div10By andThen d2s)("3") // 2.0 !!!
+
+// Using Function1#compose
+val res4 = (d2s compose div10By compose plus2 compose s2i)("3") // 2.0 !!!
+```
+
+---
+
+## Recommendation
+<br/>
+
+F#'s pipe idiom is quite elegant.
+
+Using it intensely would change your Scala code a lot.
+
+--
+
+### Don't use it!
+
+It is idiomatic F#, not idiomatic Scala.
+
+Other Scala programmers (not used to it) would probably not recognize what your code is doing.
+
+---
+
+class: middle, center
+
+# 6. Monoidal Function Composition
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+&nbsp;
+
+.footnote[
+&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo06ComposingWithMonoid*
 ]
 
 ---
@@ -1030,7 +1135,7 @@ Monoid[Int => Int].combineAll(List(f, g, h))(4)  // 110
 
 class: middle, center
 
-# 6. *Function1* as Functor
+# 7. *Function1* as Functor
 <br/>
 <br/>
 <br/>
@@ -1039,7 +1144,7 @@ class: middle, center
 &nbsp;
 
 .footnote[
-&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo06Functor*
+&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo07Functor*
 ]
 
 ---
@@ -1168,7 +1273,7 @@ val res1 = fMapped("3") // 2.0 !!!
 
 class: middle, center
 
-# 7. *Function1* as Monad
+# 8. *Function1* as Monad
 <br/>
 <br/>
 <br/>
@@ -1177,7 +1282,7 @@ class: middle, center
 &nbsp;
 
 .footnote[
-&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo07Monad*
+&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo08aMonad*
 ]
 
 ---
@@ -1351,13 +1456,14 @@ val loginOk1 = checkLogin(1, "zerocool")(db) // true
 val loginOk2 = checkLogin(4, "davinci")(db)  // false
 ```
 
+See: *demo.Demo08bDbReader*<br/>
 Example taken from "Scala with Cats" (see chapter Resources for link)
 
 ---
 
 class: middle, center
 
-# 8. Kleisli composition - done manually
+# 9. Kleisli composition - done manually
 <br/>
 <br/>
 <br/>
@@ -1366,7 +1472,7 @@ class: middle, center
 &nbsp;
 
 .footnote[
-&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo08KleisliDoneManually*
+&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo09KleisliDoneManually*
 ]
 
 ---
@@ -1451,11 +1557,11 @@ val res2: Option[String] = flatMappedOnOpt2("3") // Some(2.0)
 ## Kleisli Composition
 
 Kleisli composition takes two functions *A => F[B]* and *B => F[C]* and yields a new function
-*A => F[C]* where the context *F[\_]* is required to be a Monad.
+*A => F[C]* where the context *F[\_]* is constrained to be a Monad.
 
 --
 
-Let's define *kleisli*:
+Let's define (our hand-weaved) *kleisli*:
 
 --
 
@@ -1511,20 +1617,20 @@ kleisliComposed2("3") foreach println    // 2.0 !!!
 --
 
 ```scala
-(s2iOpt andThenF plus2Opt andThenF div10ByOpt andThenF d2sOpt) foreach println
+(s2iOpt andThenF plus2Opt andThenF div10ByOpt andThenF d2sOpt)("3") foreach println
 ```
 
 --
 
 ```scala
-(s2iOpt >=> plus2Opt >=> div10ByOpt >=> d2sOpt) foreach println
+(s2iOpt >=> plus2Opt >=> div10ByOpt >=> d2sOpt)("3") foreach println
 ```
 
 ---
 
 class: middle, center
 
-# 9. *case class Kleisli*
+# 10. *case class Kleisli*
 <br/>
 <br/>
 <br/>
@@ -1533,7 +1639,7 @@ class: middle, center
 &nbsp;
 
 .footnote[
-&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo09KleisliCaseClass*
+&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo10KleisliCaseClass*
 ]
 
 ---
@@ -1546,7 +1652,7 @@ Cats instead provides a *case class Kleisli* with the functionality shown above 
 
 --
 
-I tinkered my own impl in *mycats.Kleisli* which works much like the Cats impl: see next slide.
+I tinkered my own case class impl in *mycats.Kleisli* which works much like the Cats impl: see next slide.
 
 ---
 
@@ -1582,30 +1688,6 @@ case class Kleisli[F[_], A, B](run: A => F[B]) {
 
 The case class methods delegate to the wrapped *run* function
 and return the resulting *run* function rewrapped in a *Kleisli* instance.
-
----
-
-### *Kleisli* companion object with Monad instance
-<br/>
-
-```scala
-object Kleisli {
-
-  // Kleisli Monad instance defined in companion object is in
-  // 'implicit scope' (i.e. found by the compiler without import).
-
-  implicit def kleisliMonad[F[_], A](implicit M: Monad[F]): Monad[Kleisli[F, A, ?]] =
-
-    new Monad[Kleisli[F, A, ?]] {
-
-      override def pure[B](b: B): Kleisli[F, A, B] =
-          Kleisli { _ => M.pure(b) }
-
-      override def flatMap[B, C](kl: Kleisli[F, A, B])(f: B => Kleisli[F, A, C])
-          : Kleisli[F, A, C] = kl flatMap f
-    }
-}
-```
 
 ---
 
@@ -1763,9 +1845,33 @@ def compose[Z](that: Kleisli[F, Z, A])(implicit M: Monad[F]): Kleisli[F, Z, B] =
 
 ---
 
+### *Kleisli* companion object with Monad instance
+<br/>
+
+```scala
+object Kleisli {
+
+  // Kleisli Monad instance defined in companion object is in
+  // 'implicit scope' (i.e. found by the compiler without import).
+
+  implicit def kleisliMonad[F[_], A](implicit M: Monad[F]): Monad[Kleisli[F, A, ?]] =
+
+    new Monad[Kleisli[F, A, ?]] {
+
+      override def pure[B](b: B): Kleisli[F, A, B] =
+          Kleisli { _ => M.pure(b) }
+
+      override def flatMap[B, C](kl: Kleisli[F, A, B])(f: B => Kleisli[F, A, C])
+          : Kleisli[F, A, C] = kl flatMap f
+    }
+}
+```
+
+---
+
 class: middle, center
 
-# 10. Reader Monad
+# 11. Reader Monad
 <br/>
 <br/>
 <br/>
@@ -1774,7 +1880,7 @@ class: middle, center
 &nbsp;
 
 .footnote[
-&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo10Reader*
+&nbsp; &nbsp; &nbsp; &nbsp; See: *demo.Demo11aReader*
 ]
 
 ---
@@ -1899,106 +2005,8 @@ val loginOk1 = checkLogin(1, "zerocool").run(db) // true
 val loginOk2 = checkLogin(4, "davinci").run(db)  // false
 ```
 
+See: *demo.Demo11bDbReader*<br/>
 Example taken from "Scala with Cats" (see chapter Resources for link)
-
----
-
-class: middle, center
-
-# 11. Piping as in F#
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-&nbsp;
-
----
-
-## Piping as in F#
-<br/>
-
-When you apply a function f to an argument x you write: &nbsp; ***f(x)***
-<br/>
-
-In F# it is very common to pipe the value into the function.<br/>
-Then you write: &nbsp; ***x |> f***
-<br/>
-
---
-
-We can provide this functionality for Scala too (using an implicit conversion):
-
---
-
-```scala
-object Pipe {
-  implicit class PipeForA[A](a: A) {
-    def pipe[B](f: A => B): B = f(a)
-    def |>[B](f: A => B): B = f(a) // F#'s |> operator
-  }
-}
-```
-
-```scala
-import Pipe._
-  
-val squared: Int => Int = x => x * x
-
-println(5.pipe(squared)) // 25
-println(5 pipe squared)  // 25
-println(5 |> squared)    // 25
-```
-
----
-
-## Building a pipeline
-
-```scala
-import Pipe._
-  
-val s2i: String => Int = _.toInt
-val plus2: Int => Int = _ + 2
-val div10By: Int => Double = 10.0 / _
-val d2s: Double => String = _.toString + " !!!"
-
-
-// Using regular Scala function invocation
-val res1 = d2s(div10By(plus2(s2i("3")))) // 2.0 !!!
-
-
-// Using pipe
-val res2a = "3".pipe(s2i).pipe(plus2).pipe(div10By).pipe(d2s) // 2.0 !!!
-
-val res2b = "3" pipe s2i pipe plus2 pipe div10By pipe d2s // 2.0 !!!
-
-// Using F#'s pipe idiom
-val res2c = "3" |> s2i |> plus2 |> div10By |> d2s // 2.0 !!!
-
-
-// Using Function1#andThen
-val res3 = (s2i andThen plus2 andThen div10By andThen d2s)("3") // 2.0 !!!
-
-// Using Function1#compose
-val res4 = (d2s compose div10By compose plus2 compose s2i)("3") // 2.0 !!!
-```
-
----
-
-## Recommendation
-<br/>
-
-F#'s pipe idiom is quite elegant.
-
-Using it intensely would change your Scala code a lot.
-
---
-
-### Don't use it!
-
-It is idiomatic F#, not idiomatic Scala.
-
-Other Scala programmers (not used to it) would probably not recognize what your code is doing.
 
 ---
 
