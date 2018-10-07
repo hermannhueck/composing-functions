@@ -180,6 +180,9 @@ Curried functions are easier to compose.
 Starting with the composition methods of *scala.Function1*:
 *compose* and *andThen*, we will investigate folding a List of functions.
 
+We can also define a pipe operator |> as in F# in order to 'pipe'
+values through a pipeline of functions.
+
 ---
 
 # Abstract (2/2)
@@ -562,26 +565,28 @@ allows us to ...
 
 ```scala
 val functions: List[Int => Int] = List(_ + 1, _ + 2, _ + 3)
-val f[Int => Int] = functions.foldRight(...)(...)
+val f[Int => Int] = functions.foldLeft(...)(...)
 ```
 
 --
 
-- wrap a function in a case class *MyWrapper*
+- wrap a function in a class or case class *Wrapper*
 
-We can define methods on *MyWrapper* which manipulate the wrapped function
-and return the manipulation result again wrapped in a new instance of *case class MyWrapper*.
+We can define methods on *Wrapper* which transform the wrapped function
+and return the transformation result again wrapped in a new instance of *case class Wrapper*.
 
 
 ```scala
-case class MyWrapper[A, B](run: A => B) {
-
-  def map[C](f: B => C): MyWrapper[A, C] = ???
-
-  def flatMap[C](f: B => MyWrapper[A, C]): MyWrapper[A, C] = ???
-
-  // other methods ...
+case class Wrapper[A, B](run: A => B) {
+  def transform[C](f: B => C): Wrapper[A, C] = Wrapper { a => f(run(a)) }
+  // more methods ...
 }
+
+val f1: String => Int = _.toInt
+val wrapper = Wrapper(f1)
+val f2: Int => Int = _ * 2
+val wrapper2 = wrapper.transform(f2)
+wrapper2.run("5") // 10
 ```
 
 ---
