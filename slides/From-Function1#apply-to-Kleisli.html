@@ -208,24 +208,26 @@ The most powerful way of function composition is *Kleisli*
 # Agenda
 <br/>
 
-1. Compiler Settings
-  - Kind Projector
-  - Partial Unification
-1. Functions as Data
-1. Tupling and Currying Functions
-1. *Function1*: *apply*, *compose*, *andThen*
-1. Piping as in F#
-1. Monoidal Function Composition
-1. *Function1* as Functor
-1. *Function1* as Monad
-1. Kleisli Composition - done manually
-1. *case class Kleisli*
-1. Reader Monad
-1. Resources
+1. [Compiler Settings](#CompilerSettings)
+  - [Kind Projector](#KindProjector)
+  - [Partial Unification](#PartialUnification)
+1. [Functions as Data](#FunctionsAsData)
+1. [Tupling and Currying Functions](#TuplingAndCurrying)
+1. [*Function1*: *apply*, *compose*, *andThen*](#Function1)
+1. [Piping as in F#](#Piping)
+1. [Monoidal Function Composition](#MonoidalFunctionComposition)
+1. [*Function1* as Functor](#Function1AsFunctor)
+1. [*Function1* as Monad](#Function1AsMonad)
+1. [Kleisli Composition - hand-weaved](#KleisliHandWeaved)
+1. [*case class Kleisli*](#CaseClassKleisli)
+1. [Reader Monad](#ReaderMonad)
+1. [Resources](#Resources)
 
 ---
 
 class: middle, center
+
+name: CompilerSettings
 
 # 1. Compiler Settings
 <br/>
@@ -256,6 +258,8 @@ addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.7")
 ```
 
 ---
+
+name: KindProjector
 
 ## 1.1 Kind Projector - Compiler Plugin
 <br/>
@@ -398,6 +402,8 @@ implicit def eitherFunctor[L]: Functor[Either[L, ?]] =
 
 ---
 
+name: PartialUnification
+
 ## 1.2 Compiler Flag *-Ypartial-unification*
 <br/>
 <br/>
@@ -504,6 +510,8 @@ https://gist.github.com/djspiewak/7a81a395c461fd3a09a6941d4cd040f2
 
 class: middle, center
 
+name: FunctionsAsData
+
 # 2. Functions as Data
 <br/>
 <br/>
@@ -592,6 +600,8 @@ wrapper2.run("5") // 10
 ---
 
 class: middle, center
+
+name: TuplingAndCurrying
 
 # 3. Tupling and Currying Functions
 <br/>
@@ -771,6 +781,8 @@ res5: List[Int] = List(0,1)
 
 class: middle, center
 
+name: Function1
+
 # 4. *Function1*: *apply*, *compose*, *andThen*
 <br/>
 <br/>
@@ -920,6 +932,8 @@ println(fChained(1)) // 112
 
 class: middle, center
 
+name: Piping
+
 # 5. Piping as in F#
 <br/>
 <br/>
@@ -1023,6 +1037,8 @@ Other Scala programmers (not used to it) would probably not recognize what your 
 ---
 
 class: middle, center
+
+name: MonoidalFunctionComposition
 
 # 6. Monoidal Function Composition
 <br/>
@@ -1173,6 +1189,8 @@ Monoid[Int => Int].combineAll(List(f, g, h))(4)  // 110
 
 class: middle, center
 
+name: Function1AsFunctor
+
 # 7. *Function1* as Functor
 <br/>
 <br/>
@@ -1310,6 +1328,8 @@ val res1 = fMapped("3") // 2.0 !!!
 ---
 
 class: middle, center
+
+name: Function1AsMonad
 
 # 8. *Function1* as Monad
 <br/>
@@ -1501,6 +1521,8 @@ Example taken from "Scala with Cats" (see chapter Resources for link)
 
 class: middle, center
 
+name: KleisliHandWeaved
+
 # 9. Kleisli composition - done manually
 <br/>
 <br/>
@@ -1667,6 +1689,8 @@ kleisliComposed2("3") foreach println    // 2.0 !!!
 ---
 
 class: middle, center
+
+name: CaseClassKleisli
 
 # 10. *case class Kleisli*
 <br/>
@@ -1909,6 +1933,8 @@ object Kleisli {
 
 class: middle, center
 
+name: ReaderMonad
+
 # 11. Reader Monad
 <br/>
 <br/>
@@ -2049,6 +2075,8 @@ Example taken from "Scala with Cats" (see chapter Resources for link)
 ---
 
 class: middle, center
+
+name: Resources
 
 # 12. Resources
 <br/>
