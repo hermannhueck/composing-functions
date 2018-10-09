@@ -19,6 +19,7 @@ object Demo11PipeApp extends App {
 
   println(5.pipe(squared)) // 25
   println(5 pipe squared) // 25
+  println(5.|>(squared)) // 25
   println(5 |> squared) // 25
 
 

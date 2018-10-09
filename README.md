@@ -18,8 +18,8 @@ The focus lies on *scala.Function1*, because due to tupling and
 currying we can regard any FunctionN (except *Function0*) as a *Function1*.
 Curried functions are easier to compose.
 
-Starting with the composition methods of *scala.Function1*:
-*compose* and *andThen*, we will investigate folding a List of functions.
+Starting with the composition methods of *scala.Function1*: *apply*,
+*compose* and *andThen*, we will investigate folding a *Seq* of functions.
 
 We can also define a pipe operator |> as in F# in order to 'pipe'
 values through a pipeline of functions.

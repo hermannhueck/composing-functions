@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>From Function1#compose to Kleisli</title>
+    <title>From Function1#apply to Kleisli</title>
 
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <meta name="keywords" content="Scala,Cats,Function,Composition,Functor,Monad,Monoid,Kleisli,Reader">
@@ -150,7 +150,7 @@ class: left, top, inverse
 class: center
 
 <br/>
-# From Function1#compose to Kleisli
+# From Function1#apply to Kleisli
 
 ## Different Ways of Function Composition
 
@@ -177,8 +177,8 @@ The focus lies on *scala.Function1*, because due to tupling and
 currying we can regard any FunctionN (except *Function0*) as a *Function1*.
 Curried functions are easier to compose.
 
-Starting with the composition methods of *scala.Function1*:
-*compose* and *andThen*, we will investigate folding a List of functions.
+Starting with the composition methods of *scala.Function1*: *apply*,
+*compose* and *andThen*, we will investigate folding a *Seq* of functions.
 
 We can also define a pipe operator |> as in F# in order to 'pipe'
 values through a pipeline of functions.
@@ -213,7 +213,7 @@ The most powerful way of function composition is *Kleisli*
   - Partial Unification
 1. Functions as Data
 1. Tupling and Currying Functions
-1. *Function1#compose* and *Function1#andThen*
+1. *Function1*: *apply*, *compose*, *andThen*
 1. Piping as in F#
 1. Monoidal Function Composition
 1. *Function1* as Functor
@@ -523,7 +523,7 @@ allows us to ...
 - store a function in a val
 
 ```scala
-val str2Int: String => Int = str => str.toInt
+val str2Int: String => Int = str => str.toInt    // Function1[String, Int]
 ```
 
 --
@@ -536,12 +536,11 @@ val mapped = List("1", "2", "3").map(str2Int)
 
 --
 
-- return a function from other functions (HOFs)
+- return a function from other (higher order) functions (HOFs)
 
 ```scala
 val plus100: Int => Int = { i =>
-  val j = manipulate(i)
-  j + 100
+  i + 100
 }
 ```
 
@@ -550,7 +549,8 @@ val plus100: Int => Int = { i =>
 - process/manipulate a function like data
 
 ```scala
-str2Int map plus100     // Functor instance for Function1 must be defined
+Option(5) map plus100
+str2Int   map plus100     // Functor instance for Function1 must be defined
 ```
 
 ---
@@ -570,7 +570,7 @@ val f[Int => Int] = functions.foldLeft(...)(...)
 
 --
 
-- wrap a function in a class or case class *Wrapper*
+- wrap a function in a class / case class *Wrapper*
 
 We can define methods on *Wrapper* which transform the wrapped function
 and return the transformation result again wrapped in a new instance of *case class Wrapper*.
@@ -771,7 +771,7 @@ res5: List[Int] = List(0,1)
 
 class: middle, center
 
-# 4. *Function1#compose* and Function1#andThen
+# 4. *Function1*: *apply*, *compose*, *andThen*
 <br/>
 <br/>
 <br/>
@@ -785,15 +785,47 @@ class: middle, center
 
 ---
 
+## *Function1#apply*
+<br/>
+
+- The basic form of function composition is function application.
+- Two functions *f* and *g* can be composed by applying *g* to the result of the application of *f*.
+
+--
+
+```scala
+val f: Int => Int = _ + 10
+val g: Int => Int = _ * 2
+
+val h: Int => Int = x => g(f(x))
+
+h(1) // 22
+```
+<br/>
+
+--
+
+```scala
+val f: A => B = ???
+val g: B => C = ???
+
+val h: A => C = x => g(f(x))   // x => g.apply(f.apply(x))
+```
+
+- The parameter type of *g* must be compliant with the result type of *f*.
+
+
+---
+
 ## Trait *Function1*
 <br/>
 
 ```scala
-trait Function1[-T1, +R] {
+trait Function1[-T, +R] {
 
-  def apply(a: T1): R
-  def compose[A](g: A => T1): A => R = { x => apply(g(x)) }
-  def andThen[A](g: R => A): T1 => A = { x => g(apply(x)) }
+  def apply(a: T): R
+  def compose[A](g: A => T): A => R = { x => apply(g(x)) }
+  def andThen[A](g: R => A): T => A = { x => g(apply(x)) }
   override def toString = "<function1>"
 }
 ```
@@ -802,17 +834,11 @@ trait Function1[-T1, +R] {
 --
 
 ```scala
-scala> val f: Int => Int = _ + 10
-f: Int => Int = $$Lambda$4204/320646851@733dc5b7
+val f: Int => Int = _ + 10
+val g: Int => Int = _ * 2
 
-scala> val g: Int => Int = _ * 2
-g: Int => Int = $$Lambda$4205/1093482910@3a179009
-
-scala> (f compose g)(1) == f(g(1))
-res6: Boolean = true
-
-scala> (f andThen g)(1) == g(f(1))
-res7: Boolean = true
+(f compose g)(1) == f(g(1))   // true
+(f andThen g)(1) == g(f(1))   // true
 ```
 
 ---
@@ -832,22 +858,30 @@ val d2s: Double => String = _.toString
 --
 
 ```scala
-// Function1#compose
-val fComposed1: String => String = d2s compose div10By compose plus2 compose s2i
+// Function1#apply
+val fComposed1: String => String = str => d2s(div10By(plus2(s2i(str))))
 val res1 = fComposed1("3") // 2.0 !!!
 ```
 
 --
 
 ```scala
-// Function1#andThen
-val fComposed2: String => String = s2i andThen plus2 andThen div10By andThen d2s
+// Function1#compose
+val fComposed2: String => String = d2s compose div10By compose plus2 compose s2i
 val res2 = fComposed2("3") // 2.0 !!!
+```
+
+--
+
+```scala
+// Function1#andThen
+val fComposed3: String => String = s2i andThen plus2 andThen div10By andThen d2s
+val res3 = fComposed3("3") // 2.0 !!!
 ```
 
 ---
 
-## Folding a List of Functions
+## Folding/Chaining a Seq of Functions
 <br/>
 
 --
@@ -859,10 +893,9 @@ val fs: Seq[Int => Int] = Seq(_*2, _+10, _+100)
 --
 
 ```scala
-val fn = fs.foldLeft(identity[Int] _) { (acc, f) => acc andThen f }
-println(fn(1)) // 112
+val fFolded = fs.foldLeft(identity[Int] _) { (acc, f) => acc andThen f }
+println(fFolded(1)) // 112
 ```
-<br/>
 
 --
 
@@ -874,7 +907,6 @@ The *identity* function is the no-op of function composition.
 <br/>
 This functionality is already provided in the Scala standard library in:
 *Function\.chain\[a\](fs: Seq[a => a]): a => a*
-<br/>
 <br/>
 
 --
@@ -914,7 +946,7 @@ Then you write: &nbsp; ***x |> f***
 
 --
 
-We can provide this functionality for Scala too (using an implicit conversion):
+We can provide this functionality in Scala (using an implicit conversion):
 
 --
 
@@ -934,6 +966,7 @@ val squared: Int => Int = x => x * x
 
 println(5.pipe(squared)) // 25
 println(5 pipe squared)  // 25
+println(5.|>(squared))   // 25
 println(5 |> squared)    // 25
 ```
 
