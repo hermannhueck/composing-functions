@@ -1,4 +1,4 @@
-# From Function1#compose to Kleisli
+# From Function1#apply to Kleisli
 
 ## Different Ways of Function Composition in Scala
 
