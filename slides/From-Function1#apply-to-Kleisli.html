@@ -849,8 +849,9 @@ trait Function1[-T, +R] {
 val f: Int => Int = _ + 10
 val g: Int => Int = _ * 2
 
-(f compose g)(1) == f(g(1))   // true
-(f andThen g)(1) == g(f(1))   // true
+(f compose g)(1) == f(g(1))            // true
+(f andThen g)(1) == g(f(1))            // true
+(f andThen g)(1) == (g compose f)(1)   // true
 ```
 
 ---
