@@ -45,32 +45,32 @@ object Demo10KleisliCaseClass extends App {
   kleisli2("3") foreach println
 
   println("----- Kleisli#flatMapF")
-  val kleisli4: Kleisli[Option, String, String] =
+  val kleisli3: Kleisli[Option, String, String] =
     Kleisli(s2iOpt) flatMapF plus2Opt flatMapF div10ByOpt flatMapF d2sOpt
+
+  kleisli3.run("3") foreach println
+
+  println("----- Kleisli#andThen")
+  val kleisli4: Kleisli[Option, String, String] =
+    Kleisli(s2iOpt) andThen plus2Opt andThen div10ByOpt andThen d2sOpt
 
   kleisli4.run("3") foreach println
 
-  println("----- Kleisli#andThen")
   val kleisli5: Kleisli[Option, String, String] =
-    Kleisli(s2iOpt) andThen plus2Opt andThen div10ByOpt andThen d2sOpt
+    Kleisli(s2iOpt) andThen Kleisli(plus2Opt) andThen Kleisli(div10ByOpt) andThen Kleisli(d2sOpt)
 
   kleisli5.run("3") foreach println
 
-  val kleisli6: Kleisli[Option, String, String] =
-    Kleisli(s2iOpt) andThen Kleisli(plus2Opt) andThen Kleisli(div10ByOpt) andThen Kleisli(d2sOpt)
-
-  kleisli6.run("3")
-
   println("----- Kleisli#compose")
-  val kleisli7: Kleisli[Option, String, String] =
+  val kleisli6: Kleisli[Option, String, String] =
     Kleisli(d2sOpt) compose div10ByOpt compose plus2Opt compose s2iOpt
 
-  kleisli7.run("3") foreach println
+  kleisli6.run("3") foreach println
 
-  val kleisli8: Kleisli[Option, String, String] =
+  val kleisli7: Kleisli[Option, String, String] =
     Kleisli(d2sOpt) compose Kleisli(div10ByOpt) compose Kleisli(plus2Opt) compose Kleisli(s2iOpt)
 
-  kleisli8.run("3") foreach println
+  kleisli7.run("3") foreach println
 
 
   println("-----\n")

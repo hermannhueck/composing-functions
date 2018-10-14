@@ -71,7 +71,7 @@ object Demo09KleisliDoneManually_Cats extends App {
   val resKleisli1 = kleisliComposed1("3")    // Some(2.0 !!!)
   resKleisli1 foreach println
 
-  implicit class RichFunction1[F[_]: Monad, A, B](f: A => F[B]) {
+  implicit class Function1WithKleisli[F[_]: Monad, A, B](f: A => F[B]) {
     def kleisli[C](g: B => F[C]): A => F[C] = a => Monad[F].flatMap(f(a))(g)
     def andThenF[C](g: B => F[C]): A => F[C] = f kleisli g
     def >=>[C](g: B => F[C]): A => F[C] = f kleisli g     // Haskell's left-to-right Kleisli operator (fish operator)

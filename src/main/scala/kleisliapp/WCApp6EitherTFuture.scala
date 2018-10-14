@@ -63,7 +63,7 @@ object WCApp6EitherTFuture extends App with Utils {
   val wcFuture: Future[Either[Error, List[(String, Int)]]] =
     wcEitherT(config.url).value
 
-  wcFuture.onComplete (completionHandler) // show result when Future is comnplete
+  wcFuture onComplete completionHandler // show result when Future is comnplete
 
   Await.ready(wcFuture, 3 seconds) // wait 3 seconds in order not to terminate the app before the future is complete
 

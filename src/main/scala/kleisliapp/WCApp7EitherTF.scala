@@ -93,7 +93,7 @@ object WCApp7EitherTF extends App with Utils {
 
     val wcFuture: Future[Either[Error, List[(String, Int)]]] = wcF[Future] // reify F[_] with Future
 
-    wcFuture.onComplete (completionHandler) // show result when Future is comnplete
+    wcFuture onComplete completionHandler // show result when Future is comnplete
 
     Await.ready(wcF[Future], 3 seconds) // wait max 3 seconds for the Future to complete
   }

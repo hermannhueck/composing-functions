@@ -10,7 +10,7 @@ import scala.util.Try
 
 /*
   In the 3rd development step I further improved getUrlDef and getLinesDef
-  using Either syntax form Cats: Either.fromTry
+  using Either syntax from Cats: Either.fromTry
  */
 object WCApp3EitherSyntax extends App {
 

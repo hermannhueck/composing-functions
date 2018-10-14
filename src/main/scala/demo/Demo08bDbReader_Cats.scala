@@ -29,15 +29,17 @@ object Demo08bDbReader_Cats extends App {
   def findUsername(userId: Int): DbReader[Option[String]] =
     db => db.usernames.get(userId)
 
-  def checkPassword(username: String, password: String): DbReader[Boolean] =
-    db => db.passwords.get(username).contains(password)
+
+  def checkPassword(optUsername: Option[String], password: String): DbReader[Boolean] = {
+    def checkPw(db: Db, username: String): Boolean =
+      db.passwords.get(username).contains(password)
+    db => optUsername.exists(name => checkPw(db, name))
+  }
 
   def checkLogin(userId: Int, password: String): DbReader[Boolean] =
     for {
       optUsername <- findUsername(userId)
-      passwordOk <- optUsername
-        .map(name => checkPassword(name, password))
-        .getOrElse(Monad[DbReader].pure(false))
+      passwordOk <- checkPassword(optUsername, password)
     } yield passwordOk
 
   println(checkLogin(1, "zerocool")(db))
