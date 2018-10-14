@@ -15,7 +15,7 @@ import scala.language.postfixOps
   In the previous step I used a wrapped an Either in a Kleisli.
   Here in step 6 the Kleisli wraps an EitherT which in turn wraps a Future that wraps an Either
 
-  'wc' returns a Kleisli[EitherT[Future, Error, ?], String, List[(String, Int)]]
+  'wcKleisli' returns a Kleisli[EitherT[Future, Error, ?], String, List[(String, Int)]]
   which wraps an EitherT[Future, Error, List[(String, Int)]]
   which wraps a Future[Either[Error, List[(String, Int)]]].
 
@@ -33,8 +33,6 @@ object WCApp6EitherTFuture extends App with Utils {
   import Errors._
 
   println("\n----- " + getClass.getSimpleName.filter(_.isLetterOrDigit))
-
-  val config = Config("https://raw.githubusercontent.com", "hermannhueck", "composing-functions", "master", "README.md")
 
   // ----- 3 helper functions with the same structure: A => EitherT[Future, Error, B]
   // ----- Without these wcKleisli would look quite messy.
@@ -55,15 +53,17 @@ object WCApp6EitherTFuture extends App with Utils {
       getLinesET andThen
       wordCountET
 
-  // unwrapping the Kleisli returns the EitherT
-  val wcEitherT: String => EitherT[Future, Error, List[(String, Int)]] =
-    wcKleisli.run
+  val config = Config("https://raw.githubusercontent.com", "hermannhueck", "composing-functions", "master", "README.md")
 
-  // running and unwrapping the EitherT returns the Future effect
+  // running the Kleisli returns the EitherT
+  val wcEitherT: EitherT[Future, Error, List[(String, Int)]] =
+    wcKleisli.run(config.url)
+
+  // unwrapping the EitherT returns the Future
   val wcFuture: Future[Either[Error, List[(String, Int)]]] =
-    wcEitherT(config.url).value
+    wcEitherT.value
 
-  wcFuture onComplete completionHandler // show result when Future is comnplete
+  wcFuture onComplete completionHandler // show result when Future is complete
 
   Await.ready(wcFuture, 3 seconds) // wait 3 seconds in order not to terminate the app before the future is complete
 

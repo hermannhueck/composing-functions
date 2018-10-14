@@ -33,12 +33,19 @@ trait Utils {
 
 
   val getUrl: String => Either[Error, URL] = urlString =>
-    tryToEither { new URL(urlString) }
+    tryToEither {
+      println("-->> getUrl")
+      new URL(urlString)
+    }
 
   val getLines: URL => Either[Error, List[String]] = url =>
-    tryToEither { using(Source.fromURL(url))(src => src.getLines.toList) }
+    tryToEither {
+      println("-->> getLines")
+      using(Source.fromURL(url))(src => src.getLines.toList)
+    }
 
-  val wordCount: List[String] => List[(String, Int)] = lines =>
+  val wordCount: List[String] => List[(String, Int)] = { lines =>
+    println("-->> wordCount")
     lines.mkString
       .toLowerCase
       .split("\\W+")
@@ -48,8 +55,9 @@ trait Utils {
       .groupBy(s => s)
       .mapValues(_.length)
       .toList
-      .filter(_._2 > 2) // return only words with occurences > 2
+      .filter(_._2 > 3) // return only words with occurences > 3
       .sortWith(_._2 > _._2)
+  }
 
 
   val stringResult: Either[Error, List[(String, Int)]] => String = // pure, without side-effect

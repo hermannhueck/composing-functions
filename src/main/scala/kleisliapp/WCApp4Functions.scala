@@ -28,17 +28,18 @@ object WCApp4Functions extends App with Utils {
 
   println("\n----- " + getClass.getSimpleName.filter(_.isLetterOrDigit))
 
-  val config = Config("https://raw.githubusercontent.com", "hermannhueck", "composing-functions", "master", "README.md")
-
-  val wc: String => Either[Error, List[(String, Int)]] = urlString =>
+  val wcReader: String => Either[Error, List[(String, Int)]] = urlString =>
     for {
       url <- getUrl(urlString)
       lines <- getLines(url)
       wcList <- wordCount(lines).asRight
     } yield wcList
 
-  val result = stringResult(wc(config.url)) // run the Function1 'wc' returns the Either result
-  println(result)
+  val config = Config("https://raw.githubusercontent.com", "hermannhueck", "composing-functions", "master", "README.md")
+
+  val wc = wcReader(config.url)
+
+  println(stringResult(wc))
 
   println("-----\n")
 }

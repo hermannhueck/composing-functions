@@ -39,8 +39,6 @@ object WCApp7EitherTF extends App with Utils {
 
   println("\n===== " + getClass.getSimpleName.filter(_.isLetterOrDigit))
 
-  val config = Config("https://raw.githubusercontent.com", "hermannhueck", "composing-functions", "master", "README.md")
-
   // ----- 3 helper functions with the same structure: A => EitherT[F, Error, B]
   // ----- Without these wcKleisli would look quite messy.
   // ----- With the type parameter F[_] the vals become defs.
@@ -61,16 +59,19 @@ object WCApp7EitherTF extends App with Utils {
       getLinesET[F] andThen
       wordCountET[F]
 
-  // unwrapping the Kleisli returns the EitherT
-  def wcEitherT[F[_]: Monad]: String => EitherT[F, Error, List[(String, Int)]] =
-    wcKleisli[F].run
+  val config = Config("https://raw.githubusercontent.com", "hermannhueck", "composing-functions", "master", "README.md")
 
-  // running and unwrapping the EitherT returns the F[_] effect
+  // Running the Kleisli returns the EitherT.
+  // That actually does not run anything, because it's a def with F[_] still unspecified.
+  def wcEitherT[F[_]: Monad]: EitherT[F, Error, List[(String, Int)]] =
+    wcKleisli[F].run(config.url)
+
+  // unwrapping the EitherT returns the F[_] effect
   def wcF[F[_]: Monad]: F[Either[Error, List[(String, Int)]]] =
-    wcEitherT[F].apply(config.url).value
+    wcEitherT[F].value
 
 
-  object UseIdForF {
+  object ReifyFWithId {
 
     println("\n----- Sync: Reify F with cats.Id ...")
 
@@ -78,11 +79,11 @@ object WCApp7EitherTF extends App with Utils {
 
     val wc: Either[Error, List[(String, Int)]] = wcF[Id] // reify F[_] with Id
 
-    showResult(wc)
+    println(stringResult(wc))
   }
 
 
-  object UseFutureForF {
+  object ReifyFWithFuture {
 
     println("\n----- Async: Reify F with Future ...")
 
@@ -93,32 +94,30 @@ object WCApp7EitherTF extends App with Utils {
 
     val wcFuture: Future[Either[Error, List[(String, Int)]]] = wcF[Future] // reify F[_] with Future
 
-    wcFuture onComplete completionHandler // show result when Future is comnplete
+    wcFuture onComplete completionHandler // show result when Future is complete
 
-    Await.ready(wcF[Future], 3 seconds) // wait max 3 seconds for the Future to complete
+    Thread.sleep(3000L) // wait max 3 seconds for the Future to complete
   }
 
 
-  object UseMonixTaskForF {
+  object ReifyFWithIdMonixTask {
 
     println("\n----- Async: Reify F with monix.eval.Task")
 
     import monix.execution.Scheduler.Implicits.global
     import monix.eval.Task
-    import scala.concurrent.duration._
-    import scala.concurrent.Await
 
     val wcTask: Task[Either[Error, List[(String, Int)]]] = wcF[Task] // reify F[_] with Task
 
     wcTask runOnComplete completionHandler // show result when Task is comnplete
 
-    Await.ready(wcF[Task].runAsync, 3 seconds) // wait max 3 seconds for the Task to complete
+    Thread.sleep(3000L) // wait max 3 seconds for the Task to complete
   }
 
 
-  UseIdForF
-  UseMonixTaskForF
-  UseFutureForF
+  ReifyFWithId
+  ReifyFWithFuture
+  ReifyFWithIdMonixTask
 
   Thread.sleep(500L)
   println("-----\n")

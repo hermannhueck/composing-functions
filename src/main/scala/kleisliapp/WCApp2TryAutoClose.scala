@@ -54,7 +54,7 @@ object WCApp2TryAutoClose extends App {
       .groupBy(s => s)
       .mapValues(_.length)
       .toList
-      .filter(_._2 > 2) // return only words with occurences > 2
+      .filter(_._2 > 3) // return only words with occurences > 3
       .sortWith(_._2 > _._2)
 
 
