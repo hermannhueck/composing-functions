@@ -1359,6 +1359,18 @@ trait Monad[F[_]] extends Functor[F] {
 
   def pure[A](a: A): F[A]
   def flatMap[A, B](fa: F[A])(f: A => F[B]): F[B]
+```
+
+--
+
+```scala
+  // map in terms of flatMap and pure
+  override def map[A, B](fa: F[A])(f: A => B): F[B] =
+          flatMap(fa)(a => pure(f(a)))
+          
+  // flatten in terms of flatMap and identity
+  def flatten[A](ffa: F[F[A]]): F[A] =
+          flatMap(ffa)(identity)
 }
 ```
 
@@ -1404,7 +1416,7 @@ implicit def eitherMonad[L]: Monad[Either[L, ?]] = new Monad[Either[L, ?]] {
 
 ---
 
-## Monad syntax
+## FlatMap syntax
 
 defined as <u>implicit conversion</u> ...
 
@@ -1413,7 +1425,7 @@ defined as <u>implicit conversion</u> ...
 in a specific way for *Monad[Function1]*:
 
 ```scala
-implicit class MonadSyntaxFunction1[P, A](f: Function1[P, A]) {
+implicit class FlatMapSyntaxForFunction1[P, A](f: Function1[P, A]) {
   def flatMap[B](g: A => P => B): P => B = Monad[Function1[P, ?]].flatMap(f)(g)
 }
 ```
@@ -1423,7 +1435,7 @@ implicit class MonadSyntaxFunction1[P, A](f: Function1[P, A]) {
 or in a generic way for any *Monad[F[_]]*:
 
 ```scala
-implicit class MonadSyntax[F[_]: Monad, A](fa: F[A]) {
+implicit class FlatMapSyntax[F[_]: Monad, A](fa: F[A]) {
   def flatMap[B](f: A => F[B]): F[B] = Monad[F].flatMap(fa)(f)
 }
 ```
@@ -1517,6 +1529,125 @@ val loginOk2 = checkLogin(4, "davinci")(db)  // false
 
 See: [*demo.Demo08bDbReader*<br/>](https://github.com/hermannhueck/composing-functions/blob/master/src/main/scala/demo/Demo08bDbReader.scala)
 Example taken from "Scala with Cats" (see chapter Resources for link)
+
+---
+
+## Flattening Curried Functions (1/3)
+
+```scala
+// Flattening nested Option (has 1 type parameter)
+val oooi: Option[Option[Option[Int]]] = Some(Some(Some(1)))
+val oi: Option[Int] = oooi.flatten.flatten
+println(oi) // Some(1)
+```
+
+--
+
+```scala
+// Flattening nested Either (has 2 type parameters)
+val eeei: Either[String, Either[String, Either[String, Int]]] =
+                              Right(Right(Right(1)))
+val ei: Either[String, Int] = eeei.flatten.flatten
+println(ei) // Right(1)
+```
+
+--
+
+```scala
+val sum3Ints: (Int, Int, Int) => Int = _ + _ + _
+val sumCurried: Function1[Int, Function1[Int, Function1[Int, Int]]] =
+                              sum3Ints.curried
+// sumCurried: Int => (Int => (Int => Int)) = ...
+```
+
+Can *Function1* be flattened?
+
+--
+
+```scala
+// Flattening nested Function1 (has 2 type parameters)
+val fFlattened: Int => Int = sumCurried.flatten.flatten
+println(fFlattened(5)) // => 15
+```
+
+---
+
+## Flattening Curried Functions (2/3)
+
+```scala
+val sum3Ints: (Int, Int, Int) => Int = _ + _ + _
+val sumCurried: Function1[Int, Function1[Int, Function1[Int, Int]]] =
+                              sum3Ints.curried
+// sumCurried: Int => (Int => (Int => Int)) = ...
+```
+
+--
+
+```scala
+val fFlattened: Int => Int = sumCurried.flatten.flatten
+println(fFlattened(5)) // => 15
+```
+
+--
+
+*flatten* is *flatMap* with *identity*.
+
+```scala
+val fFlatMapped: Int => Int = sumCurried.flatMap(identity).flatMap(identity)
+println(fFlatMapped(5)) // => 15
+```
+
+--
+
+*flatMap* and *map* can be replaced with a for-comnprehension.
+
+```scala
+val fBuiltWithFor: Int => Int = for {
+  f1 <- sumCurried
+  f2 <- f1
+  int <- f2
+} yield int
+println(fBuiltWithFor(5)) // => 15
+```
+
+See: [*demo.Demo08cFlattenCurriedFunctions*](https://github.com/hermannhueck/composing-functions/blob/master/src/main/scala/demo/Demo08cFlattenCurriedFunctions.scala)
+
+---
+
+## Flattening Curried Functions (3/3)
+
+```scala
+implicit class FlattenSyntax[F[_]: Monad, A](ffa: F[F[A]]) {
+  def flatten: F[A] = Monad[F].flatten(ffa)
+}
+```
+
+--
+
+With this implicit conversion we can invoke *flatten* on any context *F[F[A]]*
+... such as a nested *List*, *Option*, *Either[L, ?]* or *Function1[P, ?]*,
+where *F[_]* is contrained to be a Monad.
+
+--
+
+This allows for convenient invocation of *Function1#flatten*<br/>
+as if *flatten* were an intrinsic method of *Function1*:
+
+```scala
+val f: Function1[A, Function1[A, B]] = ???
+```
+
+```scala
+val g: Function1[A, B] = f.flatten
+```
+
+--
+
+instead of:
+
+```scala
+val g: Function1[A, B] = Monad[Function1[A, ?]].flatten(f)
+```
 
 ---
 

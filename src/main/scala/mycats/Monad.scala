@@ -16,14 +16,22 @@ object Monad {
 
   object syntax {
 
-    implicit class MonadSyntax[F[_]: Monad, A](fa: F[A]) {
+    implicit class FlatMapSyntax[F[_]: Monad, A](fa: F[A]) {
       def flatMap[B](f: A => F[B]): F[B] = Monad[F].flatMap(fa)(f)
     }
 
-    /*
-    implicit class MonadSyntaxFunction1[P, A](f: Function1[P, A]) {
-      def flatMap[B](g: A => P => B): P => B = Monad[Function1[P, ?]].flatMap(f)(g)
+    implicit class FlattenSyntax[F[_]: Monad, A](ffa: F[F[A]]) {
+      def flatten: F[A] = Monad[F].flatten(ffa)
     }
+
+    /*
+        implicit class FlatMapSyntaxForFunction1[P, A](f: Function1[P, A]) {
+          def flatMap[B](g: A => P => B): P => B = Monad[Function1[P, ?]].flatMap(f)(g)
+        }
+
+        implicit class FlattenSyntaxForFunction1[P, A](f: Function1[P, Function1[P, A]]) {
+          def flatten[B]: P => A = Monad[Function1[P, ?]].flatten(f)
+        }
     */
   }
 
