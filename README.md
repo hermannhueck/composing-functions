@@ -61,6 +61,6 @@ one improving the other.
 - Step 6: Uses *Kleisli* wrapping an *EitherT*
 that wraps a *Future* which in turn wraps an *Either*
 - Step 7: abstracts over *Future* and turns *Future* to a generic effect:
-*F[_]* which is constrained to be a Monad*.
+*F[_]* (which is constrained to be a Monad).
 F is reified with three concrete types:
 *cats.Id*, *scala.concurrent.Future* and *monix.eval.Task*.
