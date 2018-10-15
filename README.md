@@ -58,6 +58,9 @@ one improving the other.
 - Step 3: Uses Cats' Either syntax to easily convert a *Try* to an *Either*
 - Step 4: Goes functional. It turns methods (defs) into functions (vals).
 - Step 5: Uses *Kleisli* wrapping an *Either*
-- Step 6: Uses *Kleisli* wrapping an *EitherT* which wraps a *Future* wrapping an *Either*
-- Step 7: abstracts over Future and turns Future to a generic effect: *F[_]: Monad*.
-F is reified with three concrete types: *cats.Id*, *scala.concurrent.Future* and *monix.eval.Task*.
+- Step 6: Uses *Kleisli* wrapping an *EitherT*
+that wraps a *Future* which in turn wraps an *Either*
+- Step 7: abstracts over *Future* and turns *Future* to a generic effect:
+*F[_]* which is constrained to be a Monad*.
+F is reified with three concrete types:
+*cats.Id*, *scala.concurrent.Future* and *monix.eval.Task*.
