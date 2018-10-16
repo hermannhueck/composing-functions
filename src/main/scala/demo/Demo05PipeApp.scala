@@ -8,7 +8,7 @@ object Pipe {
   }
 }
 
-object Demo11PipeApp extends App {
+object Demo05PipeApp extends App {
 
   println("\n===== Piping as in F#")
 
