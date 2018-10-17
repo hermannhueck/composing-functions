@@ -573,7 +573,7 @@ allows us to ...
 
 ```scala
 val functions: List[Int => Int] = List(_ + 1, _ + 2, _ + 3)
-val f[Int => Int] = functions.foldLeft(...)(...)
+val f: Int => Int = functions.foldLeft(...)(...)
 ```
 
 --
@@ -864,7 +864,7 @@ val g: Int => Int = _ * 2
 val s2i: String => Int = _.toInt
 val plus2: Int => Int = _ + 2
 val div10By: Int => Double = 10.0 / _
-val d2s: Double => String = _.toString
+val d2s: Double => String = _.toString + " !!!"
 ```
 <br/>
 
@@ -1308,7 +1308,7 @@ val res = h(2)  // 10
 val s2i: String => Int = _.toInt
 val plus2: Int => Int = _ + 2
 val div10By: Int => Double = 10.0 / _
-val d2s: Double => String = _.toString
+val d2s: Double => String = _.toString + " !!!"
 ```
 <br/>
 
