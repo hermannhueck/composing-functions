@@ -109,7 +109,11 @@ object WCApp7EitherTF extends App with Utils {
 
     val wcTask: Task[Either[Error, List[(String, Int)]]] = wcF[Task] // reify F[_] with Task
 
-    wcTask runOnComplete completionHandler // show result when Task is comnplete
+    // wcTask runOnComplete completionHandler // runOnComplete is deprecated
+    wcTask runAsync {
+      case Left(throwable) => println(throwable.toString)
+      case Right(result) => showResult(result)
+    }  // show result when Task is complete
 
     Thread.sleep(3000L) // wait max 3 seconds for the Task to complete
   }
