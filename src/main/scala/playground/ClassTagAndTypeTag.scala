@@ -1,5 +1,8 @@
 package playground
 
+import scala.reflect.ClassTag
+import scala.reflect.runtime.universe
+
 // code of Sinisa Louc's blogpost at
 // https://medium.com/@sinisalouc/overcoming-type-erasure-in-scala-8f2422070d20
 
@@ -8,21 +11,16 @@ object ClassTagAndTypeTag extends App {
   object extractor1 {
 
     object Extractor {
+      // flatMap takes a function of type: A => GenTraversableOnce[B]
       def extract[T](list: List[Any]): List[T] = list.flatMap {
-        case element: T => Some(element)
+        case element: T => Some(element) // !!! warning:
+          // abstract type pattern T is unchecked since it is eliminated by erasure
         case _ => None
-      }
-
-      private def ff[T](x: Any): Option[T] = {
-        x match {
-          case element: T => Some(element)
-          case _ => None
-        }
       }
     }
 
     val list = List(1, "string1", List(), "string2")
-    val result = Extractor.extract[String](list)
+    val result: List[String] = Extractor.extract[String](list)
     println(result) // List(1, string1, List(), string2)
   }
 
@@ -31,7 +29,7 @@ object ClassTagAndTypeTag extends App {
     import scala.reflect.ClassTag
 
     object Extractor {
-      def extract[T](list: List[Any])(implicit tag: ClassTag[T]) =
+      def extract[T](list: List[Any])(implicit tag: ClassTag[T]): List[T] =
         list.flatMap {
           case element: T => Some(element)
           case _ => None
@@ -39,12 +37,16 @@ object ClassTagAndTypeTag extends App {
     }
 
     val list: List[Any] = List(1, "string1", List(), "string2")
-    val result = Extractor.extract[String](list)
+    val result: List[String] = Extractor.extract[String](list)
     println(result) // List(string1, string2)
 
     val list2: List[List[Any]] = List(List(1, 2), List("a", "b"))
-    val result2 = Extractor.extract[List[Int]](list2)
+    val result2: List[List[Int]] = Extractor.extract[List[Int]](list2)
     println(result2) // List(List(1, 2), List(a, b))
+
+    val list3: List[Iterable[Any]] = List(List(1, 2), Set(1, 2))
+    val result3: List[List[Int]] = Extractor.extract[List[Int]](list3)
+    println(result3) // List(List(1, 2))
   }
 
   object recognizer1 {
@@ -60,7 +62,7 @@ object ClassTagAndTypeTag extends App {
     }
 
     val list: List[Int] = List(1, 2)
-    val result = Recognizer.recognize(list)
+    val result: String = Recognizer.recognize(list)
     println(result)
 
     // prints:
@@ -75,7 +77,7 @@ object ClassTagAndTypeTag extends App {
     abstract class SomeClass[T] {
 
       object Recognizer {
-        def recognize[T](x: T)(implicit tag: WeakTypeTag[T]): String =
+        def recognize[U](x: U)(implicit tag: WeakTypeTag[U]): String =
           tag.tpe match {
             case TypeRef(utype, usymbol, args) =>
               List(utype, usymbol, args).mkString("\n")
@@ -83,7 +85,7 @@ object ClassTagAndTypeTag extends App {
       }
 
       val list: List[T]
-      val result = Recognizer.recognize(list)
+      val result: String = Recognizer.recognize(list)
       println(result)
     }
 
@@ -100,19 +102,21 @@ object ClassTagAndTypeTag extends App {
     import scala.reflect.classTag
     import scala.reflect.runtime.universe._
 
-    val ct = classTag[String]
-    val tt = typeTag[List[Int]]
-    val wtt = weakTypeTag[List[Int]]
+    val ct: ClassTag[String] = classTag[String]
+    val tt: universe.TypeTag[List[Int]] = typeTag[List[Int]]
+    val wtt: universe.WeakTypeTag[List[Int]] = weakTypeTag[List[Int]]
 
-    val array = ct.newArray(3)
+    val array: Array[String] = ct.newArray(3)
     array.update(2, "Third")
 
     println(array.mkString(","))
     println(tt.tpe)
+    println(wtt.tpe)
     println(wtt.equals(tt))
 
     //  prints:
     //    null,null,Third
+    //    List[Int]
     //    List[Int]
     //    true
   }
