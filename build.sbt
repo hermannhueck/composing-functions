@@ -15,7 +15,7 @@ scalacOptions ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "io.monix" %% "monix-eval" % "3.0.0" // imports cats and cats-effect
+  "io.monix" %% "monix-eval" % "3.1.0" // imports cats and cats-effect
 )
 
 // https://github.com/typelevel/kind-projector
