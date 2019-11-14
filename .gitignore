@@ -3,15 +3,17 @@ target/
 
 # hidden directories
 .idea/
-.bloop/
-.metals/
 .vscode/
+.metals/
+.bloop/
+project/.bloop/
 
 # files
 *.class
 *.log
 *.jar
 *.zip
+project/metals.sbt
 
 # hidden files
 .history
