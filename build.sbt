@@ -1,5 +1,5 @@
 name := "composing-functions"
-version := "0.0.1"
+version := "0.1.0"
 
 scalaVersion := "2.12.10"
 
@@ -15,10 +15,10 @@ scalacOptions ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "io.monix" %% "monix-eval" % "3.1.0" // imports cats and cats-effect
+  "io.monix"       %% "monix-eval"  % "3.1.0", // imports cats and cats-effect
+  "org.typelevel"  %% "cats-effect" % "2.0.0",
+  "org.scalatest"  %% "scalatest"   % "3.1.0" % Test,
+  "org.scalacheck" %% "scalacheck"  % "1.14.3" % Test,
+  compilerPlugin("org.typelevel" % "kind-projector"      % "0.11.0" cross CrossVersion.full),
+  compilerPlugin("com.olegpy"    %% "better-monadic-for" % "0.3.1")
 )
-
-// https://github.com/typelevel/kind-projector
-addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.0" cross CrossVersion.full)
-// https://github.com/oleg-py/better-monadic-for
-addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
