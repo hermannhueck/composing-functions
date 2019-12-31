@@ -3,19 +3,22 @@ target/
 
 # hidden directories
 .idea/
-.vscode/
-.metals/
 .bloop/
-project/.bloop/
+.metals/
+.vscode/
 
 # files
 *.class
 *.log
 *.jar
 *.zip
-project/metals.sbt
 
 # hidden files
 .history
-.dotty-ide-disabled
+.dotty-ide*
 .DS_Store
+
+project/metals.sbt
+.bloop/*
+.metals/*
+
