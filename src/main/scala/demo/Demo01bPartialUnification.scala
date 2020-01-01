@@ -1,7 +1,5 @@
 package demo
 
-import scala.language.higherKinds
-
 /*
   code compiles only with -Ypartial-unification enabled
 
@@ -14,5 +12,7 @@ object Demo01bPartialUnification extends App {
   def foo[F[_], A](fa: F[A]): String =
     fa.toString
 
-  foo { x: Int => x * 2 }
+  foo { x: Int =>
+    x * 2
+  }
 }

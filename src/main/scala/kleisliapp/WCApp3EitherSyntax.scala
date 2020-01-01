@@ -7,6 +7,7 @@ import cats.syntax.either._
 import scala.io.Source
 import scala.language.reflectiveCalls
 import scala.util.Try
+import scala.util.Using
 
 /*
   In the 3rd development step I further improved getUrlDef and getLinesDef
@@ -20,7 +21,7 @@ object WCApp3EitherSyntax extends App {
 
   // this saves us from finally blocks to close a resource
   // works with every resource that has a method 'close'
-  def using[A, CL <: {def close(): Unit}] (closeable: CL) (f: CL => A): A =
+  def using[A, CL <: { def close(): Unit }](closeable: CL)(f: CL => A): A =
     try {
       f(closeable)
     } finally {
@@ -28,35 +29,34 @@ object WCApp3EitherSyntax extends App {
     }
 
   def getUrlDef(urlString: String): Either[Error, URL] =
-    Either.fromTry(Try{
-      new URL(urlString)
-    }).leftMap(toError)
+    Try(new URL(urlString)).toEither.leftMap(toError)
 
   def getLinesDef(url: URL): Either[Error, List[String]] =
-    Either.fromTry(Try{
-      using(Source.fromURL(url))(src => src.getLines.toList)
-    }).leftMap(toError)
+    Try {
+      Using.resource(Source.fromURL(url))(src => src.getLines.toList)
+    }.toEither.leftMap(toError)
 
   def wordCountDef(lines: List[String]): List[(String, Int)] =
-    lines.mkString
+    lines
+      .mkString
       .toLowerCase
       .split("\\W+")
       .toList
       .map(_.filter(c => c.isLetter))
       .filter(_.length > 3)
       .groupBy(s => s)
+      .view
       .mapValues(_.length)
       .toList
       .filter(_._2 > 3) // return only words with occurences > 3
       .sortWith(_._2 > _._2)
 
-
   val config = Config("https://raw.githubusercontent.com", "hermannhueck", "composing-functions", "master", "README.md")
 
   def wcDef(urlString: String): Either[Error, List[(String, Int)]] =
     for {
-      url <- getUrlDef(urlString)
-      lines <- getLinesDef(url)
+      url    <- getUrlDef(urlString)
+      lines  <- getLinesDef(url)
       wcList <- Right(wordCountDef(lines))
     } yield wcList
 

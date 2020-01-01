@@ -1,8 +1,6 @@
 package mycats.data
 
-import mycats.{Functor, Monad, ~>}
-
-import scala.language.higherKinds
+import mycats.{~>, Functor, Monad}
 
 case class Kleisli[F[_], A, B](run: A => F[B]) {
 
@@ -31,7 +29,7 @@ case class Kleisli[F[_], A, B](run: A => F[B]) {
   }
 
   def mapF[G[_], C](f: F[B] => G[C]): Kleisli[G, A, C] = Kleisli {
-    run andThen f       // same as: a => f(run(a))
+    run andThen f // same as: a => f(run(a))
   }
 
   def mapK[G[_]](nt: F ~> G): Kleisli[G, A, B] = Kleisli {
@@ -44,11 +42,14 @@ case class Kleisli[F[_], A, B](run: A => F[B]) {
 object Kleisli {
 
   def pure[F[_], A, B](b: B)(implicit M: Monad[F]): Kleisli[F, A, B] =
-    Kleisli { _ => M.pure(b) }
+    Kleisli { _ =>
+      M.pure(b)
+    }
 
   def ask[F[_], A](implicit M: Monad[F]): Kleisli[F, A, A] =
-    Kleisli { a => M.pure(a) }
-
+    Kleisli { a =>
+      M.pure(a)
+    }
 
   // Kleisli Monad instance defined in companion object is in
   // 'implicit scope' (i.e. found by the compiler without import).
@@ -56,7 +57,9 @@ object Kleisli {
   implicit def kleisliMonad[F[_], A](implicit M: Monad[F]): Monad[Kleisli[F, A, ?]] = new Monad[Kleisli[F, A, ?]] {
 
     override def pure[B](b: B): Kleisli[F, A, B] =
-      Kleisli { _ => M.pure(b) }
+      Kleisli { _ =>
+        M.pure(b)
+      }
 
     override def flatMap[B, C](kl: Kleisli[F, A, B])(f: B => Kleisli[F, A, C]): Kleisli[F, A, C] =
       kl flatMap f

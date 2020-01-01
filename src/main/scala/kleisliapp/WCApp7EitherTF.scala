@@ -7,8 +7,6 @@ import cats.data.{EitherT, Kleisli}
 import cats.syntax.either._
 import cats.syntax.applicative._
 
-import scala.language.{higherKinds, postfixOps}
-
 /*
   Step 7 generalizes getUrlET, getLinesET, wordCountET and wcKleisli.
   These functions are now parameterized with the generic effect F[_]
@@ -70,7 +68,6 @@ object WCApp7EitherTF extends App with Utils {
   def wcF[F[_]: Monad]: F[Either[Error, List[(String, Int)]]] =
     wcEitherT[F].value
 
-
   object ReifyFWithId {
 
     println("\n----- Sync: Reify F with cats.Id ...")
@@ -82,14 +79,12 @@ object WCApp7EitherTF extends App with Utils {
     println(stringResult(wc))
   }
 
-
   object ReifyFWithFuture {
 
     println("\n----- Async: Reify F with Future ...")
 
     import scala.concurrent.ExecutionContext.Implicits.global
-    import scala.concurrent.duration._
-    import scala.concurrent.{Await, Future}
+    import scala.concurrent.Future
     import cats.instances.future._
 
     val wcFuture: Future[Either[Error, List[(String, Int)]]] = wcF[Future] // reify F[_] with Future
@@ -98,7 +93,6 @@ object WCApp7EitherTF extends App with Utils {
 
     Thread.sleep(3000L) // wait max 3 seconds for the Future to complete
   }
-
 
   object ReifyFWithIdMonixTask {
 
@@ -112,12 +106,11 @@ object WCApp7EitherTF extends App with Utils {
     // wcTask runOnComplete completionHandler // runOnComplete is deprecated
     wcTask runAsync {
       case Left(throwable) => println(throwable.toString)
-      case Right(result) => showResult(result)
-    }  // show result when Task is complete
+      case Right(result)   => showResult(result)
+    } // show result when Task is complete
 
     Thread.sleep(3000L) // wait max 3 seconds for the Task to complete
   }
-
 
   ReifyFWithId
   ReifyFWithFuture

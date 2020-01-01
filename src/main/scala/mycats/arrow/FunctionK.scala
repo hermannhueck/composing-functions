@@ -1,7 +1,5 @@
 package mycats.arrow
 
-import scala.language.higherKinds
-
 // λ[...] is a polymorphic function value
 // (not supported by standard Scala, but provided by kind-projector)
 // see: https://github.com/non/kind-projector

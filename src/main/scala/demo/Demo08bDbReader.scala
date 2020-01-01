@@ -1,6 +1,5 @@
 package demo
 
-import mycats.Monad
 import mycats.Functor.syntax._
 import mycats.Monad.syntax._
 
@@ -14,16 +13,17 @@ object Demo08bDbReader extends App {
     2 -> "kate",
     3 -> "margo"
   )
+
   val passwords: Map[String, String] = Map(
-    "dade" -> "zerocool",
-    "kate" -> "acidburn",
+    "dade"  -> "zerocool",
+    "kate"  -> "acidburn",
     "margo" -> "secret"
   )
 
   case class Db(usernames: Map[Int, String], passwords: Map[String, String])
   val db = Db(users, passwords)
 
-  type DbReader[A] = Db => A    // ^= Function1[Db, A] ^= DB => A
+  type DbReader[A] = Db => A // ^= Function1[Db, A] ^= DB => A
 
   def findUsername(userId: Int): DbReader[Option[String]] =
     db => db.usernames.get(userId)
@@ -37,7 +37,7 @@ object Demo08bDbReader extends App {
   def checkLogin(userId: Int, password: String): DbReader[Boolean] =
     for {
       optUsername <- findUsername(userId)
-      passwordOk <- checkPassword(optUsername, password)
+      passwordOk  <- checkPassword(optUsername, password)
     } yield passwordOk
 
   println(checkLogin(1, "zerocool")(db))

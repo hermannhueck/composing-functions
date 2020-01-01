@@ -1,11 +1,8 @@
 package demo
 
-import cats.Monad
 import cats.syntax.functor._
 import cats.syntax.flatMap._
-import cats.syntax.monad._
 import cats.instances.function._
-import cats.instances.either._
 
 object Demo08cFlattenCurriedFunctions_Cats extends App {
 
@@ -13,15 +10,13 @@ object Demo08cFlattenCurriedFunctions_Cats extends App {
 
   // Flattening nested Option (has 1 type parameter)
   val oooi: Option[Option[Option[Int]]] = Some(Some(Some(1)))
-  val oi: Option[Int] = oooi.flatten.flatten
+  val oi: Option[Int]                   = oooi.flatten.flatten
   println(oi) // Some(1)
-
 
   // Flattening nested Either (has 2 type parameters)
   val eeei: Either[String, Either[String, Either[String, Int]]] = Right(Right(Right(1)))
-  val ei: Either[String, Int] = eeei.flatten.flatten
+  val ei: Either[String, Int]                                   = eeei.flatten.flatten
   println(ei) // Right(1)
-
 
   // Flattening nested Function1 (has 2 type parameters)
   val sum3Ints: (Int, Int, Int) => Int = _ + _ + _
@@ -39,15 +34,15 @@ object Demo08cFlattenCurriedFunctions_Cats extends App {
 
   // Flattening with a for-comprehension
   val fBuiltWithFor: Int => Int = for {
-    f1 <- sumCurried
-    f2 <- f1
+    f1  <- sumCurried
+    f2  <- f1
     int <- f2
   } yield int
   println(fBuiltWithFor(5)) // => 15
 
   val oiBuiltWithFor: Option[Int] = for {
     ooi <- oooi
-    oi <- ooi
+    oi  <- ooi
     int <- oi
   } yield int
   println(oiBuiltWithFor) // => Some(1)

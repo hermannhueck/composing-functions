@@ -1,7 +1,5 @@
 package mycats
 
-import scala.language.higherKinds
-
 package object data {
 
   type ReaderT[F[_], A, B] = Kleisli[F, A, B]

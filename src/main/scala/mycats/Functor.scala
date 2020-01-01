@@ -1,7 +1,6 @@
 package mycats
 
 import scala.concurrent.Future
-import scala.language.higherKinds
 
 // typeclass functor
 trait Functor[F[_]] {
@@ -22,11 +21,10 @@ object Functor {
     implicit class FunctorSyntaxFunction1[P, A](fa: Function1[P, A]) {
       def map[B](f: A => B): Function1[P, B] = Functor[Function1[P, ?]].map(fa)(f)
     }
-    */
+   */
   }
 
   def apply[F[_]: Functor]: Functor[F] = implicitly
-
 
   // default typeclass instances in implicit scope
 
@@ -56,8 +54,9 @@ object Functor {
   }
 
   implicit def tuple2Functor[L]: Functor[Tuple2[L, ?]] = new Functor[Tuple2[L, ?]] {
+
     override def map[R1, R2](fa: Tuple2[L, R1])(f: R1 => R2): Tuple2[L, R2] = fa match {
-      case(x, y) => (x, f(y))
+      case (x, y) => (x, f(y))
     }
   }
 

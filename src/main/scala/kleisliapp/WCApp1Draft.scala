@@ -22,12 +22,13 @@ object WCApp1Draft extends App {
 
   println("\n----- " + getClass.getSimpleName.filter(_.isLetterOrDigit))
 
-  def getUrlDef(urlString: String): Either[Error, URL] = try {
-    Right(new URL(urlString))
-  } catch {
-    case e: MalformedURLException => Left(MalformedUrlError(e.toString))
-    case e: Throwable => Left(UnspecificError(e.toString))
-  }
+  def getUrlDef(urlString: String): Either[Error, URL] =
+    try {
+      Right(new URL(urlString))
+    } catch {
+      case e: MalformedURLException => Left(MalformedUrlError(e.toString))
+      case e: Throwable             => Left(UnspecificError(e.toString))
+    }
 
   def getLinesDef(url: URL): Either[Error, List[String]] = {
     var src: BufferedSource = null
@@ -35,10 +36,10 @@ object WCApp1Draft extends App {
       src = Source.fromURL(url)
       Right(src.getLines.toList)
     } catch {
-      case e: UnknownHostException => Left(UnknownHostError(e.toString))
+      case e: UnknownHostException  => Left(UnknownHostError(e.toString))
       case e: FileNotFoundException => Left(FileNotFoundError(e.toString))
-      case e: IOException => Left(IOError(e.toString))
-      case e: Throwable => Left(UnspecificError(e.toString))
+      case e: IOException           => Left(IOError(e.toString))
+      case e: Throwable             => Left(UnspecificError(e.toString))
     } finally {
       if (src != null)
         src.close()
@@ -46,13 +47,15 @@ object WCApp1Draft extends App {
   }
 
   def wordCountDef(lines: List[String]): List[(String, Int)] =
-    lines.mkString
+    lines
+      .mkString
       .toLowerCase
       .split("\\W+")
       .toList
       .map(_.filter(c => c.isLetter))
       .filter(_.length > 3)
       .groupBy(s => s)
+      .view
       .mapValues(_.length)
       .toList
       .filter(_._2 > 3) // return only words with occurences > 3
@@ -62,8 +65,8 @@ object WCApp1Draft extends App {
 
   def wcDef(urlString: String): Either[Error, List[(String, Int)]] =
     for {
-      url <- getUrlDef(urlString)
-      lines <- getLinesDef(url)
+      url    <- getUrlDef(urlString)
+      lines  <- getLinesDef(url)
       wcList <- Right(wordCountDef(lines))
     } yield wcList
 
