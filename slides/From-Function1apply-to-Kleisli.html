@@ -208,7 +208,7 @@ class: center
 
 <br/>
 <br/>
-## &copy; 2018 Hermann Hueck
+## &copy; 2020 Hermann Hueck
 <br/>
 https://github.com/hermannhueck/composing-functions
 
@@ -298,15 +298,19 @@ name: CompilerSettings
 <br/>
 <br/>
 <br/>
-### To compile the subsequent code examples, kind-projector and partial-unification must be enabled in *build.sbt*:
+### To compile the subsequent code examples, kind-projector and partial-unification (pre 2.13) must be enabled in *build.sbt*:
 <br/>
 <br/>
 <br/>
 
 ```scala
+// only in scala versions < 2.11 and 2.12
+// enabled by default in scala 2.13 and higher
 scalacOptions += "-Ypartial-unification"
 
-addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.7")
+addCompilerPlugin(
+  "org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full
+)
 ```
 
 ---
@@ -321,7 +325,9 @@ name: KindProjector
 Enable *kind-projector* in *build.sbt*:
 
 ```scala
-addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.7")
+addCompilerPlugin(
+  "org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full
+)
 ```
 
 <br/>
@@ -464,6 +470,8 @@ name: PartialUnification
 Enable partial unification in *build.sbt*:
 
 ```scala
+// only in scala versions < 2.11 and 2.12
+// enabled by default in scala 2.13 and higher
 scalacOptions += "-Ypartial-unification"
 ```
 
@@ -499,7 +507,7 @@ foo { x: Int => x * 2 }
 
 --
 
-This code doesn't compile without *-Ypartial-unification*. &nbsp; &nbsp; &nbsp; **Why?**
+In Scala 2.12 this code doesn't compile without *-Ypartial-unification*. &nbsp; &nbsp; &nbsp; **Why?**
 
 --
 
@@ -520,7 +528,7 @@ This code doesn't compile without *-Ypartial-unification*. &nbsp; &nbsp; &nbsp; 
 
 Imagine this flag turns *Function1[A, B]* into *Function1Int[B]*.
 With this fix on the fly *Function1Int* has kind _\* --> \*_ which is the kind required by F[\_].
-What the compiler transforms the invocation to would look something like this:
+What the compiler transforms this to would look something like this:
 
 ```scala
 def foo[F[_], A](fa: F[A]): String = fa.toString
@@ -542,7 +550,7 @@ when you use a left-biased type like Scalactic's *Or* data type (a left-biased *
 
 --
 
-Enable plugin and the flag when using a Functor, Applicative or a Monad instance
+Enable plugin (in all Scala 2 versions) and the flag (in Scala &lt; 2.13) when using a Functor, Applicative or a Monad instance
 for higher-kinded types which take more than one type parameter. *Either*, *Tuple2*
 and *Function1* are the best known representatives of this kind of types.
 
@@ -987,7 +995,7 @@ class: middle, center
 
 name: Piping
 
-# 5. Piping as in F#
+# 5. Piping as in F-Sharp
 <br/>
 <br/>
 <br/>
@@ -1072,20 +1080,27 @@ val res4 = (d2s compose div10By compose plus2 compose s2i)("3") // 2.0 !!!
 
 ---
 
-## Recommendation
+## Scala 2.13
 <br/>
 
-F#'s pipe idiom is quite elegant.
+provides the operators _pipe_ and _tap_.
 
-Using it intensely would change your Scala code a lot.
+- _pipe_: transforms the value to the left of the pipe with the _Function1[A, B]_ to the right.
+
+- _tap_: applies the side-effecting _Function1[A, Unit]_ to the value and returns it unchanged.
 
 --
 
-### Don't use it!
+<br/>
 
-It is idiomatic F#, not idiomatic Scala.
+```scala
+// only Scala 2.13+
+import scala.util.chaining._
 
-Other Scala programmers (not used to it) would probably not recognize what your code is doing.
+val str: String = 42 pipe {x => s"Most important number: $x"}
+
+val int: Int = 42 tap {x => println(s"Most important number: $x")}
+```
 
 ---
 
