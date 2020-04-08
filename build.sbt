@@ -15,8 +15,8 @@ scalacOptions ++= Seq(
 
 libraryDependencies ++= Seq(
   "io.monix"       %% "monix-eval"  % "3.1.0", // imports cats and cats-effect
-  "org.typelevel"  %% "cats-effect" % "2.0.0",
-  "org.scalatest"  %% "scalatest"   % "3.1.0" % Test,
+  "org.typelevel"  %% "cats-effect" % "2.1.2",
+  "org.scalatest"  %% "scalatest"   % "3.1.1" % Test,
   "org.scalacheck" %% "scalacheck"  % "1.14.3" % Test,
   compilerPlugin("org.typelevel" % "kind-projector"      % "0.11.0" cross CrossVersion.full),
   compilerPlugin("com.olegpy"    %% "better-monadic-for" % "0.3.1")
